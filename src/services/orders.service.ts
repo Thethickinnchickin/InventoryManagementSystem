@@ -16,12 +16,20 @@ export class OrdersService {
     private orderItemsRepository: Repository<OrderItem>,
     private readonly auditService: AuditService, // Inject the AuditService
   ) {}
-
-  findAll(): Promise<Order[]> {
-    return this.ordersRepository.find({
+  
+  async findAll(page: number = 1, limit: number = 10): Promise<{ orders: Order[], total: number, totalPages: number }> {
+    const [orders, total] = await this.ordersRepository.findAndCount({
       where: { deletedAt: null }, // Ensure only non-deleted orders are returned
-      relations: ['items'],
+      relations: ['items', 'items.product'], // Include both items and their associated product
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    return {
+      orders,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   findOne(id: number): Promise<Order> {

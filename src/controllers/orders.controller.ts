@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
 import { OrdersService } from '../services/orders.service';
 import { Order } from '../entities/order.entity';
 import { CreateOrderDto } from '../dtos/create-order.dto';
@@ -9,8 +9,11 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
-  findAll(): Promise<Order[]> {
-    return this.ordersService.findAll();
+  findAll(
+  @Query('page') page: number = 1,
+  @Query('limit') limit: number = 10
+  ): Promise<{ orders: Order[], total: number, totalPages: number }> {
+    return this.ordersService.findAll(page, limit);
   }
 
   @Get(':id')

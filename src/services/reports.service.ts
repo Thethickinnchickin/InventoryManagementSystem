@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { Order } from 'src/entities/order.entity';
 import { OrderHistoryFilterDto } from 'src/dtos/order-history-filter.dto';
+
 
 @Injectable()
 export class ReportsService {
@@ -14,12 +15,13 @@ export class ReportsService {
     private ordersRepository: Repository<Order>,
   ) {}
 
-  // Method to get stock levels
-  async getStockLevels(): Promise<Product[]> {
-    return this.productsRepository.find({
+  async getStockLevels(): Promise<Product[]> {  
+    const stockLevels = await this.productsRepository.find({
       select: ['name', 'stock'],
-      order: { stock: 'ASC' }, // Orders products by stock quantity, from lowest to highest
+      order: { stock: 'ASC' },
     });
+  
+    return stockLevels;
   }
 
   async getOrderHistory(filterDto: OrderHistoryFilterDto): Promise<Order[]> {
@@ -53,5 +55,14 @@ export class ReportsService {
 
     return await query.getMany();
   }
+
+  async getOrderHistoryReport(startDate: string, endDate: string): Promise<any> {
+    // Ensure 'createdAt' is used if 'created_at' doesn't exist
+    return this.ordersRepository.createQueryBuilder('o')
+      .select(['o.customerName', 'o.totalAmount', 'o.createdAt'])
+      .where('o.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
+      .getMany();
+  }
 }
+
 

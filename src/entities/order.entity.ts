@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, DeleteDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, DeleteDateColumn, CreateDateColumn } from 'typeorm';
 import { OrderItem } from './order-item.entity';
 
 @Entity('orders')
@@ -20,4 +20,7 @@ export class Order {
 
   @DeleteDateColumn() // Add this to track soft deletes
   deletedAt: Date | null;
+
+  @CreateDateColumn() // Automatically set to the current date/time when the entity is created
+  createdAt: Date;
 }

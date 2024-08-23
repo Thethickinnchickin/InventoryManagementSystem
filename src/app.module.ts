@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { ProductsModule } from './products/products.module';
@@ -14,7 +15,9 @@ import { Category } from './entities/category.entity';
 import { AuditModule } from './audit/audit.module';
 import { AuditLog } from './entities/audit-log.entity';
 
+
 import { ReportsModule } from './reports/reports.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -36,6 +39,7 @@ import { ReportsModule } from './reports/reports.module';
     OrderItemsModule,
     AuditModule,
     ReportsModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}

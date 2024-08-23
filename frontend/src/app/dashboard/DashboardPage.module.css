@@ -1,0 +1,46 @@
+/* DashboardPage.module.css */
+.dashboardContainer {
+    padding: 20px;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+  }
+  
+  .metricsCards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+  }
+  
+  .card h3 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .card p {
+    font-size: 1.5rem;
+    color: #555;
+  }
+  
+  .card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .card li {
+    margin: 10px 0;
+    font-size: 1rem;
+    color: #666;
+  }
+  

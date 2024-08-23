@@ -17,4 +17,12 @@ export class ReportsController {
   getOrderHistory(@Query() filterDto: OrderHistoryFilterDto) {
     return this.reportsService.getOrderHistory(filterDto);
   }
+
+  @Get('order-history/report')
+  async getOrderHistoryReport(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.reportsService.getOrderHistoryReport(startDate, endDate);
+  }
 }

@@ -8,6 +8,7 @@ import { Category } from 'src/entities/category.entity';
 import { AuditService } from './audit.service';
 
 
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -19,6 +20,7 @@ export class ProductsService {
 
     private readonly auditService: AuditService, // Inject the AuditService
   ) {}
+
 
   findAll(): Promise<Product[]> {
     return this.productsRepository.find();
@@ -105,4 +107,5 @@ export class ProductsService {
       .where('product.id = :productId', { productId })
       .getMany();
   }
+
 }
