@@ -1,6 +1,6 @@
-import { IsString, IsOptional, IsDecimal, IsInt, MinLength, Min } from 'class-validator';
+import { IsString, IsOptional, IsDecimal, IsInt, MinLength, Min, IsNumber } from 'class-validator';
 
-export class UpdateProductDto {
+export class UpdateProductCategoryDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
@@ -18,4 +18,8 @@ export class UpdateProductDto {
   @IsInt()
   @Min(0)
   stock?: number;
+
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  categoryIds?: number[];
 }

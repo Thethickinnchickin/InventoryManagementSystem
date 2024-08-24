@@ -39,6 +39,12 @@ export class ProductsController {
     return this.productsService.update(id, updateProductDto);
   }
 
+  @Put(':id/categories')
+  updateCategories(@Param('id') id: number, @Body('categoryIds') categoryIds: number[]): Promise<Product> {
+    console.log(categoryIds)
+    return this.productsService.updateProductCategories(id, categoryIds);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: number): Promise<void> {
     return this.productsService.remove(id);

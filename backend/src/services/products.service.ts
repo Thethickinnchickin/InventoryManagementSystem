@@ -27,7 +27,10 @@ export class ProductsService {
   }
 
   findOne(id: number): Promise<Product> {
-    return this.productsRepository.findOneBy({ id });
+    return this.productsRepository.findOne({
+      where: { id },
+      relations: ['categories'], // Ensure categories are loaded
+    });
   }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -50,29 +53,42 @@ export class ProductsService {
   
 
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
-    // Fetch the product before updating it for audit purposes
     const existingProduct = await this.findOne(id);
     if (!existingProduct) {
       throw new Error(`Product with ID ${id} not found`);
     }
-
-    await this.productsRepository.update(id, updateProductDto);
-    const updatedProduct = await this.findOne(id);
-
+  
+    // Update product fields
+    await this.productsRepository.update(id, {
+      name: updateProductDto.name,
+      description: updateProductDto.description,
+      price: updateProductDto.price,
+      stock: updateProductDto.stock,
+    });
+  
+    // Update categories if provided
+    if (updateProductDto.categoryIds && updateProductDto.categoryIds.length > 0) {
+      const categories = await this.categoriesRepository.findByIds(updateProductDto.categoryIds);
+      existingProduct.categories = categories;
+    }
+  
+    // Save the updated product
+    const updatedProduct = await this.productsRepository.save(existingProduct);
+  
     // Log the update action
     await this.auditService.logAction(
-      'Product', // entityName
-      id,        // entityId
-      'UPDATE',  // action
+      'Product',
+      id,
+      'UPDATE',
       {
         before: existingProduct,
         after: updatedProduct
       }
     );
-
+  
     return updatedProduct;
   }
-
+  
   async remove(id: number): Promise<void> {
     // Fetch the product before deletion for audit purposes
     const existingProduct = await this.findOne(id);
@@ -106,6 +122,19 @@ export class ProductsService {
       .innerJoin('category.products', 'product')
       .where('product.id = :productId', { productId })
       .getMany();
+  }
+
+  async updateProductCategories(productId: number, categoryIds: number[]): Promise<Product> {
+    const product = await this.findOne(productId);
+
+    if (!product) {
+      throw new Error(`Product with ID ${productId} not found`);
+    }
+
+    const categories = await this.categoriesRepository.findByIds(categoryIds);
+    product.categories = categories;
+
+    return this.productsRepository.save(product);
   }
 
 }

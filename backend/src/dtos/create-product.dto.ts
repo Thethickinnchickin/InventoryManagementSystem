@@ -1,5 +1,5 @@
 // src/products/dto/create-product.dto.ts
-import { IsNotEmpty, IsString, IsDecimal, IsInt, Min, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsDecimal, IsInt, Min, MaxLength, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateProductDto {
   @IsNotEmpty()
@@ -18,4 +18,8 @@ export class CreateProductDto {
   @IsInt()
   @Min(0)
   stock: number;
+
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  categoryIds?: number[];
 }

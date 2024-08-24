@@ -214,10 +214,18 @@ const OrdersPage = () => {
         <ul className={styles.orderList}>
           {orders.length > 0 ? (
             orders.map((order) => (
-              <li key={order.id} className={styles.orderListItem}>
-                <span>
-                  {order.customerName} - ${order.totalAmount}
-                </span>
+            <li key={order.id} className={styles.orderListItem}>
+            <span>
+              <strong>{order.customerName}</strong> - ${order.totalAmount}, <strong>Order Placed:</strong> {new Date(order.createdAt).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true,
+              })}
+            </span>
+
                 <div className={styles.orderActions}>
                   <button
                     onClick={() => handleEditOrder(order)}
