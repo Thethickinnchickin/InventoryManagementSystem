@@ -1,0 +1,66 @@
+.dashboardContainer {
+  padding: 30px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.card p {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #007bff;
+}
+
+.card ul {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+.card ul li {
+  font-size: 1rem;
+  color: #666;
+  padding: 5px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.card ul li:last-child {
+  border-bottom: none;
+}
+
+.card ul li strong {
+  font-weight: 600;
+}

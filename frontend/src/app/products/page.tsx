@@ -13,12 +13,17 @@ export default function ProductsPage() {
   const [editId, setEditId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const limit = 10; // Number of products per page
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/products');
-        setProducts(response.data);
+        const response = await axios.get(`http://localhost:3000/products?page=${page}&limit=${limit}&isPaginated=true`);
+        setProducts(response.data.data);
+        setTotalPages(response.data.lastPage);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -35,7 +40,13 @@ export default function ProductsPage() {
 
     fetchProducts();
     fetchCategories();
-  }, []);
+  }, [page]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -188,6 +199,21 @@ export default function ProductsPage() {
           </li>
         ))}
       </ul>
+      <div className={styles.pagination}>
+        <button
+          disabled={page === 1}
+          onClick={() => handlePageChange(page - 1)}
+        >
+          Previous
+        </button>
+        <span>{page} of {totalPages}</span>
+        <button
+          disabled={page === totalPages}
+          onClick={() => handlePageChange(page + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

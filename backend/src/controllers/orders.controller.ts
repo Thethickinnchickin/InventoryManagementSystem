@@ -9,11 +9,14 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
-  findAll(
-  @Query('page') page: number = 1,
-  @Query('limit') limit: number = 10
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('customerName') customerName?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string
   ): Promise<{ orders: Order[], total: number, totalPages: number }> {
-    return this.ordersService.findAll(page, limit);
+    return this.ordersService.findAll(page, limit, customerName, startDate, endDate);
   }
 
   @Get(':id')

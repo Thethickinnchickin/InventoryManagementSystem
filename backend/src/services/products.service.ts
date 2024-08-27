@@ -22,8 +22,31 @@ export class ProductsService {
   ) {}
 
 
-  findAll(): Promise<Product[]> {
-    return this.productsRepository.find();
+  async findAll({ page = 1, limit = 10, isPaginated = false }): Promise<{ data: Product[]; total: number; page: number; lastPage: number }> {
+    if(isPaginated) {
+      const [data, total] = await this.productsRepository.findAndCount({
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+
+      return {
+        data,
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      };
+    } else {
+      const [data, total] = await this.productsRepository.findAndCount();
+      return {
+        data,
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      };
+    }
+
+
+
   }
 
   findOne(id: number): Promise<Product> {

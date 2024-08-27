@@ -17,13 +17,38 @@ export class OrdersService {
     private readonly auditService: AuditService, // Inject the AuditService
   ) {}
   
-  async findAll(page: number = 1, limit: number = 10): Promise<{ orders: Order[], total: number, totalPages: number }> {
-    const [orders, total] = await this.ordersRepository.findAndCount({
+  // OrdersService.ts
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    customerName?: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<{ orders: Order[], total: number, totalPages: number }> {
+    // Build the query options
+    const queryOptions: any = {
       where: { deletedAt: null }, // Ensure only non-deleted orders are returned
       relations: ['items', 'items.product'], // Include both items and their associated product
       skip: (page - 1) * limit,
       take: limit,
-    });
+    };
+
+    // Add filtering conditions
+    if (customerName) {
+      queryOptions.where.customerName = customerName;
+    }
+
+    // if (startDate || endDate) {
+    //   queryOptions.where.createdAt = {};
+    //   if (startDate) {
+    //     queryOptions.where.createdAt['$gte'] = new Date(startDate);
+    //   }
+    //   if (endDate) {
+    //     queryOptions.where.createdAt['$lte'] = new Date(endDate);
+    //   }
+    // }
+
+    const [orders, total] = await this.ordersRepository.findAndCount(queryOptions);
 
     return {
       orders,
@@ -31,6 +56,7 @@ export class OrdersService {
       totalPages: Math.ceil(total / limit),
     };
   }
+
 
   findOne(id: number): Promise<Order> {
     return this.ordersRepository.findOne({

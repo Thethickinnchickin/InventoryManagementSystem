@@ -1,69 +1,75 @@
-'use client'; // Add this directive at the top of the file
+'use client';
 
-import { useEffect, useState } from 'react';
-import { Bar } from 'react-chartjs-2';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import styles from './DashboardPage.module.css';
 
-// Register necessary components for Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+interface DashboardMetrics {
+  revenue: number | string;
+  orders: number | string;
+  topProducts: { product_id: number; name: string; total_sales: number | string }[];
+  lowStock: { id: number; name: string; stock: number }[];
+  newCustomers: number | string;
+  avgOrderValue: number | string;
+  mostActiveUsers: { username: string; ordersCount: number }[];
+}
 
-const OrderHistoryChart = () => {
-  const [chartData, setChartData] = useState({
-    labels: [] as string[],
-    datasets: [
-      {
-        label: 'Stock Levels',
-        data: [] as number[],
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-    ],
-  });
+const DashboardPage = () => {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchMetrics = async () => {
       try {
-        console.log("Fetching Data");
-        const response = await axios.get('http://localhost:3000/reports/stock-levels');
-
-        console.log(response);
-
-        // Extract data and format it for the chart
-        const productNames = response.data.map((entry: { name: string }) => entry.name);
-        const stockLevels = response.data.map((entry: { stock: number }) => entry.stock);
-
-        // Remove duplicate product names and aggregate stock levels
-        const aggregatedData = productNames.reduce((acc: any, name: string, index: number) => {
-          if (!acc[name]) {
-            acc[name] = 0;
-          }
-          acc[name] += stockLevels[index];
-          return acc;
-        }, {});
-
-        setChartData({
-          labels: Object.keys(aggregatedData),
-          datasets: [
-            {
-              label: 'Stock Levels',
-              data: Object.values(aggregatedData),
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-              borderColor: 'rgba(75, 192, 192, 1)',
-              borderWidth: 1,
-            },
-          ],
-        });
+        const response = await axios.get('http://localhost:3000/dashboard/metrics');
+        setMetrics(response.data);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching dashboard metrics:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchMetrics();
   }, []);
 
-  return <Bar data={chartData} />;
+  if (loading) return <p>Loading...</p>;
+
+  return (
+    <div className={styles.dashboardContainer}>
+      <h1 className={styles.title}>Dashboard Overview</h1>
+      <div className={styles.metricsGrid}>
+        <div className={styles.card}>
+          <h3>Total Revenue</h3>
+          <p>${parseFloat(String(metrics?.revenue || 0)).toLocaleString()}</p>
+        </div>
+        <div className={styles.card}>
+          <h3>Total Orders</h3>
+          <p>{metrics?.orders}</p>
+        </div>
+        <div className={styles.card}>
+          <h3>Top-Selling Products</h3>
+          <ul>
+            {metrics?.topProducts?.map((product) => (
+              <li key={product.product_id}>
+                {product.name}: ${parseFloat(String(product.total_sales)).toLocaleString()}
+              </li>
+            )) || <li>No products available</li>}
+          </ul>
+        </div>
+        <div className={styles.card}>
+          <h3>Low Stock Alerts</h3>
+          <ul>
+            {metrics?.lowStock?.map((product) => (
+              <li key={product.id}>
+                {product.name}: {product.stock} left
+              </li>
+            )) || <li>No low stock alerts</li>}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-export default OrderHistoryChart;
+export default DashboardPage;

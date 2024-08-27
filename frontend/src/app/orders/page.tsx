@@ -5,7 +5,7 @@ import axios from "axios";
 import styles from "./OrdersPage.module.css";
 
 const OrdersPage = () => {
-  const [orders, setOrders] = useState([]); // Initialize as an empty array
+  const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [orderForm, setOrderForm] = useState({
     customerName: "",
@@ -20,59 +20,97 @@ const OrdersPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Filter states
+  const [filterCustomerName, setFilterCustomerName] = useState("");
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
+
   useEffect(() => {
     fetchOrders();
     fetchProducts();
-  }, [page]);
+  }, [page, filterCustomerName, filterStartDate, filterEndDate]);
 
   const fetchOrders = async () => {
     try {
       const response = await axios.get("http://localhost:3000/orders", {
-        params: { page, limit: 10 },
+        params: {
+          page,
+          limit: 10,
+          customerName: filterCustomerName,
+          startDate: filterStartDate,
+          endDate: filterEndDate,
+        },
       });
-      setOrders(response.data.orders || []); // Ensure orders is set to an empty array if undefined
-      setTotalPages(response.data.totalPages || 1); // Ensure totalPages has a default value
+      setOrders(response.data.orders || []);
+      setTotalPages(response.data.totalPages || 1);
     } catch (error) {
       console.error("Error fetching orders:", error);
-      setOrders([]); // Set to empty array on error
+      setOrders([]);
     }
   };
 
   const fetchProducts = async () => {
     try {
       const response = await axios.get("http://localhost:3000/products");
-      setProducts(response.data || []); // Ensure products is set to an empty array if undefined
+      setProducts(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error fetching products:", error);
-      setProducts([]); // Set to empty array on error
+      setProducts([]); // Set an empty array in case of error
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setOrderForm({ ...orderForm, [name]: value });
   };
 
-  const handleItemChange = (index, e) => {
+  const handleItemChange = async (index: number, e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const { name, value } = e.target;
     const updatedItems = [...orderForm.items];
-    updatedItems[index] = { ...updatedItems[index], [name]: value };
+
+    if (name === 'productId') {
+      // Find the selected product
+      const selectedProduct = products.find(product => product.id === parseInt(value, 10));
+      if (selectedProduct) {
+        // Update the item with selected product and its price
+        updatedItems[index] = {
+          ...updatedItems[index],
+          productId: parseInt(value, 10),
+          price: parseFloat(selectedProduct.price).toFixed(2),
+          quantity: updatedItems[index]?.quantity || 1, // Preserve existing quantity
+        };
+      }
+    } else if (name === 'quantity') {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        quantity: parseInt(value, 10),
+      };
+    } else if (name === 'price') {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        price: value,
+      };
+    }
+
     setOrderForm({ ...orderForm, items: updatedItems });
   };
 
   const handleAddItem = () => {
     setOrderForm({
       ...orderForm,
-      items: [...orderForm.items, { productId: "", quantity: 1, price: 0 }],
+      items: [
+        ...orderForm.items,
+        { productId: "", quantity: 1, price: "0.00" },
+      ],
     });
   };
 
-  const handleRemoveItem = (index) => {
+  const handleRemoveItem = (index: number) => {
     const updatedItems = orderForm.items.filter((_, i) => i !== index);
     setOrderForm({ ...orderForm, items: updatedItems });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (editMode) {
@@ -89,22 +127,22 @@ const OrdersPage = () => {
     }
   };
 
-  const handleEditOrder = (order) => {
+  const handleEditOrder = (order: any) => {
     setOrderForm({
       customerName: order.customerName,
       shippingAddress: order.shippingAddress,
-      items: order.items.map((item) => ({
+      items: order.items.map((item: any) => ({
         productId: item.product.id,
         quantity: item.quantity,
-        price: item.price,
+        price: parseFloat(item.price).toFixed(2), // Convert to decimal format
       })),
-      totalAmount: order.totalAmount,
+      totalAmount: parseFloat(order.totalAmount).toFixed(2), // Convert to decimal format
     });
     setEditMode(true);
     setCurrentOrderId(order.id);
   };
 
-  const handleDeleteOrder = async (id) => {
+  const handleDeleteOrder = async (id: number) => {
     try {
       await axios.delete(`http://localhost:3000/orders/${id}`);
       fetchOrders();
@@ -113,7 +151,7 @@ const OrdersPage = () => {
     }
   };
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
@@ -121,6 +159,36 @@ const OrdersPage = () => {
     <div className={styles.container}>
       <h1 className={styles.heading}>Orders Management</h1>
       
+      <section className={styles.filterSection}>
+        <h2 className={styles.subheading}>Filter Orders</h2>
+        <div className={styles.filters}>
+          <input
+            type="text"
+            placeholder="Filter by Customer Name"
+            value={filterCustomerName}
+            onChange={(e) => setFilterCustomerName(e.target.value)}
+            className={styles.input}
+          />
+          <input
+            type="date"
+            placeholder="Start Date"
+            value={filterStartDate}
+            onChange={(e) => setFilterStartDate(e.target.value)}
+            className={styles.input}
+          />
+          <input
+            type="date"
+            placeholder="End Date"
+            value={filterEndDate}
+            onChange={(e) => setFilterEndDate(e.target.value)}
+            className={styles.input}
+          />
+          <button onClick={fetchOrders} className={styles.filterButton}>
+            Apply Filters
+          </button>
+        </div>
+      </section>
+
       <section className={styles.formSection}>
         <h2 className={styles.subheading}>{editMode ? "Edit Order" : "Create New Order"}</h2>
         <form onSubmit={handleSubmit} className={styles.orderForm}>
@@ -131,6 +199,7 @@ const OrdersPage = () => {
             onChange={handleInputChange}
             placeholder="Customer Name"
             required
+            className={styles.input}
           />
           <input
             type="text"
@@ -139,6 +208,7 @@ const OrdersPage = () => {
             onChange={handleInputChange}
             placeholder="Shipping Address"
             required
+            className={styles.input}
           />
           {orderForm.items.map((item, index) => (
             <div key={index} className={styles.itemRow}>
@@ -214,17 +284,17 @@ const OrdersPage = () => {
         <ul className={styles.orderList}>
           {orders.length > 0 ? (
             orders.map((order) => (
-            <li key={order.id} className={styles.orderListItem}>
-            <span>
-              <strong>{order.customerName}</strong> - ${order.totalAmount}, <strong>Order Placed:</strong> {new Date(order.createdAt).toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true,
-              })}
-            </span>
+              <li key={order.id} className={styles.orderListItem}>
+                <span>
+                  <strong>{order.customerName}</strong> - ${parseFloat(order.totalAmount).toFixed(2)}, <strong>Order Placed:</strong> {new Date(order.createdAt).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: true,
+                  })}
+                </span>
 
                 <div className={styles.orderActions}>
                   <button
@@ -246,28 +316,6 @@ const OrdersPage = () => {
             <li>No orders available</li>
           )}
         </ul>
-      </section>
-
-      <section className={styles.paginationSection}>
-        <div className={styles.pagination}>
-          <button
-            disabled={page <= 1}
-            onClick={() => handlePageChange(page - 1)}
-            className={styles.pageButton}
-          >
-            Previous
-          </button>
-          <span className={styles.pageInfo}>
-            Page {page} of {totalPages}
-          </span>
-          <button
-            disabled={page >= totalPages}
-            onClick={() => handlePageChange(page + 1)}
-            className={styles.pageButton}
-          >
-            Next
-          </button>
-        </div>
       </section>
     </div>
   );

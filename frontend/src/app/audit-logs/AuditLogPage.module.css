@@ -1,0 +1,79 @@
+
+.container {
+    padding: 20px;
+  }
+  
+  .filters {
+    margin-bottom: 20px;
+  }
+  
+  .filterInput {
+    margin-right: 10px;
+    padding: 5px;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .thead th {
+    background-color: #f4f4f4;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .table td {
+    padding: 10px;
+    vertical-align: top; /* Ensure cells are aligned to the top */
+    border: 1px solid #ddd;
+  }
+  
+  .pagination {
+    padding-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .toggleButton {
+    background: none;
+    border: none;
+    color: #0070f3;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+    text-decoration: underline;
+  }
+  
+  .changesContent {
+    /* max-height: 200px; /* Adjust as needed */
+    overflow-y: auto;
+    white-space: pre-wrap;
+    background-color: #202020;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .pagination button {
+    padding: 8px 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .pagination button:disabled {
+    background-color: #cccccc;
+  }
+  
+  .pagination span {
+    font-size: 16px;
+  }
+
+  .thead {
+    color: black;
+  }
+  

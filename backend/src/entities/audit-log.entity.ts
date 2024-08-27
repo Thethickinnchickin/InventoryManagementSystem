@@ -18,7 +18,7 @@ export class AuditLog {
   @Column({ type: 'jsonb', nullable: true })
   changes: Record<string, any>;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true, default: "ADMIN" })
   performedBy?: string;
 
   @CreateDateColumn()

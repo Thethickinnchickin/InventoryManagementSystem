@@ -42,7 +42,7 @@ export class DashboardController {
     // Find low-stock products
     const lowStock = await this.productRepository.find({
       where: {
-        stock: LessThan(10), // Using LessThan for proper comparison
+        stock: LessThan(100), // Using LessThan for proper comparison
       },
       select: ['id', 'name', 'stock'],
     });

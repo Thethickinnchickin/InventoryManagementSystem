@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
 import { ProductsService } from '../services/products.service';
 import { Product } from '../entities/product.entity';
 import { CreateProductDto } from '../dtos/create-product.dto';
@@ -10,8 +10,12 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  findAll(): Promise<Product[]> {
-    return this.productsService.findAll();
+  findAll(
+    @Query('page') page: number = 1, // Default page to 1
+    @Query('limit') limit: number = 10, // Default limit to 10
+    @Query('isPaginated') isPaginated: boolean = false,
+  ): Promise<{ data: Product[]; total: number; page: number; lastPage: number }> {
+    return this.productsService.findAll({ page, limit, isPaginated });
   }
 
   @Get(':id')
