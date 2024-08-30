@@ -25,14 +25,23 @@ const OrdersPage = () => {
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
 
+
   useEffect(() => {
     fetchOrders();
     fetchProducts();
   }, [page, filterCustomerName, filterStartDate, filterEndDate]);
 
   const fetchOrders = async () => {
+
+    const cookieString = document.cookie;
+    const token = cookieString
+      .split('; ')
+      .find(row => row.startsWith('authToken'))
+      ?.split('=')[1];
+
     try {
       const response = await axios.get("http://localhost:3000/orders", {
+        headers: { Authorization: `Bearer ${token}` },
         params: {
           page,
           limit: 10,
@@ -112,11 +121,21 @@ const OrdersPage = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const cookieString = document.cookie;
+    const token = cookieString
+      .split('; ')
+      .find(row => row.startsWith('authToken'))
+      ?.split('=')[1];
+
     try {
       if (editMode) {
-        await axios.put(`http://localhost:3000/orders/${currentOrderId}`, orderForm);
+        await axios.put(`http://localhost:3000/orders/${currentOrderId}`, orderForm, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       } else {
-        await axios.post("http://localhost:3000/orders", orderForm);
+        await axios.post("http://localhost:3000/orders", orderForm, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       }
       setOrderForm({ customerName: "", shippingAddress: "", items: [], totalAmount: 0 });
       setEditMode(false);
@@ -144,7 +163,14 @@ const OrdersPage = () => {
 
   const handleDeleteOrder = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:3000/orders/${id}`);
+      const cookieString = document.cookie;
+      const token = cookieString
+       .split('; ')
+       .find(row => row.startsWith('authToken'))
+       ?.split('=')[1];
+      await axios.delete(`http://localhost:3000/orders/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       fetchOrders();
     } catch (error) {
       console.error("Error deleting order:", error);

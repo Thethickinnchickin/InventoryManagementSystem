@@ -1,11 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { Order } from 'src/entities/order.entity';
 import { Product } from 'src/entities/product.entity';
 import { OrderItem } from 'src/entities/order-item.entity';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserRole } from 'src/entities/user.entity';
 
 @Controller('dashboard')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class DashboardController {
   constructor(
     @InjectRepository(Order) private orderRepository: Repository<Order>,
@@ -13,7 +18,9 @@ export class DashboardController {
     @InjectRepository(OrderItem) private orderItemRepository: Repository<OrderItem>,
   ) {}
 
+
   @Get('metrics')
+  @Roles(UserRole.ADMIN)
   async getDashboardMetrics() {
     // Calculate total revenue
     const totalRevenueResult = await this.orderRepository

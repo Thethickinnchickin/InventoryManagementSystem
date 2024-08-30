@@ -18,6 +18,7 @@ import { AuditLog } from './entities/audit-log.entity';
 
 import { ReportsModule } from './reports/reports.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     AuditModule,
     ReportsModule,
     DashboardModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

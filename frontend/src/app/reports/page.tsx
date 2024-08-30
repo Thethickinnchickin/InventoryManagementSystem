@@ -43,12 +43,21 @@ const ReportsPage = () => {
   const fetchFilteredData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3000/reports/order-history/report', {
-        params: {
-          startDate: dayjs(startDate).format('YYYY-MM-DD'),
-          endDate: dayjs(endDate).format('YYYY-MM-DD'),
-        },
-      });
+     // Retrieve the token from cookies
+     const cookieString = document.cookie;
+     const token = cookieString
+       .split('; ')
+       .find(row => row.startsWith('authToken'))
+       ?.split('=')[1];
+
+
+     const response = await axios.get('http://localhost:3000/reports/order-history/report', {
+       headers: { Authorization: `Bearer ${token}` },
+       params: {
+         startDate: dayjs(startDate).format('YYYY-MM-DD'),
+         endDate: dayjs(endDate).format('YYYY-MM-DD'),
+       },
+     });
       setOrderData(response.data);
     } catch (error) {
       console.error('Error fetching filtered order history data:', error);

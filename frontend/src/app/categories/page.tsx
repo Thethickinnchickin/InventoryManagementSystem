@@ -29,11 +29,20 @@ const CategoriesPage = () => {
 
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
+    const cookieString = document.cookie;
+    const token = cookieString
+     .split('; ')
+     .find(row => row.startsWith('authToken'))
+     ?.split('=')[1];
     try {
       if (editMode) {
-        await axios.put(`http://localhost:3000/categories/${currentCategoryId}`, categoryForm);
+        await axios.put(`http://localhost:3000/categories/${currentCategoryId}`, categoryForm, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       } else {
-        await axios.post('http://localhost:3000/categories', categoryForm);
+        await axios.post('http://localhost:3000/categories', categoryForm, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       }
       fetchCategories();
       resetForm();
@@ -50,7 +59,14 @@ const CategoriesPage = () => {
 
   const handleDeleteCategory = async (categoryId) => {
     try {
-      await axios.delete(`http://localhost:3000/categories/${categoryId}`);
+      const cookieString = document.cookie;
+      const token = cookieString
+       .split('; ')
+       .find(row => row.startsWith('authToken'))
+       ?.split('=')[1];
+      await axios.delete(`http://localhost:3000/categories/${categoryId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       fetchCategories();
     } catch (error) {
       console.error('Error deleting category:', error);

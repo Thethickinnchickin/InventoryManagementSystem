@@ -19,17 +19,39 @@ export default function AuditLogPage() {
 
   const fetchAuditLogs = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/reports/audit-log`, {
-        params: {
-          page,
-          limit,
-          ...filters,
-        },
-      });
-      const data = response.data;
-      const pages = typeof data.lastPage === 'number' ? data.lastPage : 1;
-      setLogs(data.data);
-      setTotalPages(pages);
+      const cookieString = document.cookie;
+      const token = cookieString
+       .split('; ')
+       .find(row => row.startsWith('authToken'))
+       ?.split('=')[1];
+      // Redirect to login page if not logged in
+ 
+
+      if (token) {
+        try {
+          const response = await axios.get(`http://localhost:3000/reports/audit-log`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: {
+              page,
+              limit,
+              ...filters,
+            },
+          });
+          const data = response.data;
+          const pages = typeof data.lastPage === 'number' ? data.lastPage : 1;
+          setLogs(data.data);
+          setTotalPages(pages);
+        } catch (error) {
+          console.error('Failed to fetch protected data', error);
+        }
+      } else {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login'
+        }
+        return null;
+      }
+
+
     } catch (error) {
       console.error('Error fetching audit logs:', error);
     }
