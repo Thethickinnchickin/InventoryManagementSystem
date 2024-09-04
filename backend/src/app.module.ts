@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -19,6 +19,8 @@ import { AuditLog } from './entities/audit-log.entity';
 import { ReportsModule } from './reports/reports.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AuthModule } from './auth/auth.module';
+import { RateLimitMiddleware } from './middleware/rate-limit.middleware';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -42,6 +44,13 @@ import { AuthModule } from './auth/auth.module';
     ReportsModule,
     DashboardModule,
     AuthModule,
+    ProfileModule
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RateLimitMiddleware)
+      .forRoutes('*'); // Apply to all routes, or specify specific routes if needed
+  }
+}

@@ -5,8 +5,8 @@ import { OrderItem } from '../entities/order-item.entity';
 import { CreateOrderItemDto } from '../dtos/create-order-item.dto';
 import { UpdateOrderItemDto } from '../dtos/update-order-item.dto';
 import { AuditService } from './audit.service'; // Import the AuditService
-import { Product } from 'src/entities/product.entity';
-import { Order } from 'src/entities/order.entity';
+import { Product } from '../entities/product.entity';
+import { Order } from '../entities/order.entity';
 
 @Injectable()
 export class OrderItemsService {

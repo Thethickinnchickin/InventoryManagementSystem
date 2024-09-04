@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
-import { Order } from 'src/entities/order.entity';
-import { OrderHistoryFilterDto } from 'src/dtos/order-history-filter.dto';
+import { Order } from '../entities/order.entity';
+import { OrderHistoryFilterDto } from '../dtos/order-history-filter.dto';
 
 
 @Injectable()

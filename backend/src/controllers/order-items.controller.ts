@@ -3,10 +3,10 @@ import { OrderItemsService } from '../services/order-items.service';
 import { OrderItem } from '../entities/order-item.entity';
 import { CreateOrderItemDto } from '../dtos/create-order-item.dto';
 import { UpdateOrderItemDto } from '../dtos/update-order-item.dto';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { UserRole } from 'src/entities/user.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { UserRole } from '../entities/user.entity';
 
 @Controller('order-items')
 @UseGuards(JwtAuthGuard, RolesGuard)

@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesController } from '../controllers/categories.controller';
 import { CategoriesService } from '../services/categories.service';
 import { Category } from '../entities/category.entity';
-import { AuditModule } from 'src/audit/audit.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [

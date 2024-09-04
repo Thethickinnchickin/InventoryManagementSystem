@@ -1,6 +1,5 @@
-"use client";
+'use client';
 
-// components/Navbar.tsx
 import { useState } from 'react';
 import Link from 'next/link';
 import styles from './Navbar.module.css';
@@ -8,7 +7,7 @@ import useAuth from '../hooks/useAuth';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  let { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, userRole, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -17,7 +16,7 @@ const Navbar: React.FC = () => {
   return (
     <nav className={styles.navbar}>
       <div className={styles.navContainer}>
-        <Link href="/" className={styles.navLogo}>
+        <Link href={userRole === 'admin' ? '/admin' : '/'} className={styles.navLogo}>
           Inventory Management
         </Link>
         <div className={styles.menuIcon} onClick={toggleMenu}>
@@ -27,33 +26,51 @@ const Navbar: React.FC = () => {
         </div>
         {isLoggedIn ? (
           <div className={`${styles.navMenu} ${isOpen ? styles.active : ''}`}>
-            <Link href="/orders" className={styles.navItem}>
-              Orders
-            </Link>
-            <Link href="/products" className={styles.navItem}>
-              Products
-            </Link>
-            <Link href="/categories" className={styles.navItem}>
-              Categories
-            </Link>
-            <Link href="/reports" className={styles.navItem}>
-              Reports
-            </Link>
-            <Link href="/audit-logs" className={styles.navItem}>
-              Audit Logs
-            </Link>
+            {userRole === 'admin' ? (
+              <>
+                <Link href="/admin" className={styles.navItem}>
+                  Dashboard
+                </Link>
+                <Link href="/admin/orders" className={styles.navItem}>
+                  Orders
+                </Link>
+                <Link href="/admin/products" className={styles.navItem}>
+                  Products
+                </Link>
+                <Link href="/admin/categories" className={styles.navItem}>
+                  Categories
+                </Link>
+                <Link href="/admin/reports" className={styles.navItem}>
+                  Reports
+                </Link>
+                <Link href="/admin/audit-logs" className={styles.navItem}>
+                  Audit Logs
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/user/orders" className={styles.navItem}>
+                  Your Orders
+                </Link>
+                <Link href="/user/products" className={styles.navItem}>
+                  Products
+                </Link>
+              </>
+            )}
             <button onClick={logout} className={styles.navItem}>
               Logout
             </button>
           </div>
-        ): (
+        ) : (
           <div className={`${styles.navMenu} ${isOpen ? styles.active : ''}`}>
             <Link href="/login" className={styles.navItem}>
               Login 
             </Link>
+            <Link href="/register" className={styles.navItem}>
+              Register
+            </Link>
           </div>
         )}
-
       </div>
     </nav>
   );

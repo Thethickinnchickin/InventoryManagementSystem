@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ReportsService } from 'src/services/reports.service';
-import { ReportsController } from 'src/controllers/reports.controller';
+import { ReportsService } from '../services/reports.service';
+import { ReportsController } from '../controllers/reports.controller';
 import { Product } from '../entities/product.entity';
-import { Order } from 'src/entities/order.entity';
-import { AuditService } from 'src/services/audit.service';
-import { AuditLog } from 'src/entities/audit-log.entity';
+import { Order } from '../entities/order.entity';
+import { AuditService } from '../services/audit.service';
+import { AuditLog } from '../entities/audit-log.entity';
 
 @Module({
   imports: [

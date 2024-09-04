@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { CreateProductDto } from '../dtos/create-product.dto';
 import { UpdateProductDto } from '../dtos/update-product.dto';
-import { Category } from 'src/entities/category.entity';
+import { Category } from '../entities/category.entity';
 import { AuditService } from './audit.service';
 
 

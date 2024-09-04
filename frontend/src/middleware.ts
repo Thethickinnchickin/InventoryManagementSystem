@@ -30,10 +30,7 @@ export function middleware(req: NextRequest) {
     console.log(decodedToken)
     // Check if the user has the necessary role
     const userRole = decodedToken?.role;
-
-    if (pathname.startsWith('/reports') || pathname.startsWith('/audit-logs')
-      || pathname.startsWith('/admim')  
-       && userRole !== 'admin') {
+    if ((pathname.startsWith('/reports') || pathname.startsWith('/audit-logs') || pathname.startsWith('/admin'))  && userRole !== 'admin') {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
   } catch (error) {
@@ -52,5 +49,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/audit-logs/:path*', '/reports/:path*', '/orders/:path*', '/'], // Routes where middleware should apply
+  matcher: ['/audit-logs/:path*', '/reports/:path*', '/orders/:path*', '/admin/:path*'], // Routes where middleware should apply
 };

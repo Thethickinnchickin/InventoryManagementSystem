@@ -1,5 +1,6 @@
 // src/entities/user.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Order } from './order.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -23,4 +24,7 @@ export class User {
     default: UserRole.USER,
   })
   role: UserRole;
+  
+  @OneToMany(() => Order, order => order.user)  // Define the inverse side
+  orders: Order[];
 }

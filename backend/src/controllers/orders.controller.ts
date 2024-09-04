@@ -1,12 +1,13 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, Query, UseGuards, Req } from '@nestjs/common';
 import { OrdersService } from '../services/orders.service';
 import { Order } from '../entities/order.entity';
 import { CreateOrderDto } from '../dtos/create-order.dto';
 import { UpdateOrderDto } from '../dtos/update-order.dto';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { User, UserRole } from 'src/entities/user.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { User, UserRole } from '../entities/user.entity';
+import { AuthenticatedRequest } from 'src/types/express-request.interface';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,6 +30,12 @@ export class OrdersController {
   @Roles(UserRole.USER, UserRole.ADMIN)
   findOne(@Param('id') id: number): Promise<Order> {
     return this.ordersService.findOne(id);
+  }
+
+  @Get('/user/all')
+  @Roles(UserRole.USER)
+  findByUser(@Req() req: AuthenticatedRequest,): Promise<Order[]> {
+    return this.ordersService.findOrdersByUser(req.user.id);
   }
 
   @Post()

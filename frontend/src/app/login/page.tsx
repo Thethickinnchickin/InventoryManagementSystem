@@ -5,6 +5,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import styles from './LoginPage.module.css';
 import Cookie from 'js-cookie';
+import jwt from 'jsonwebtoken';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -16,10 +17,17 @@ const LoginPage = () => {
     try {
       const response = await axios.post('http://localhost:3000/auth/login', { username, password });
       const token  = response.data.token.access_token;
+      const decodedToken = jwt.decode(token) as { role: string };
+      
       Cookie.set('authToken', token); 
       console.log('Login successful');
       // Redirect or show success message
-      window.location.href = '/'; // Example redirect
+      if(decodedToken.role === "admin") {
+        window.location.href = "/admin"
+      } else {
+        window.location.href = '/'; // Example redirect
+      }
+      
     } catch (err) {
       setError('Invalid username or password');
     }

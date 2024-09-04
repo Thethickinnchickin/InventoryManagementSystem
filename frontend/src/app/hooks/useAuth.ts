@@ -1,31 +1,31 @@
-// src/hooks/useAuth.ts
-
-import { useState, useEffect } from "react";
-
+import { useState, useEffect } from 'react';
+import Cookie from 'js-cookie';
+import jwt from 'jsonwebtoken';
 
 const useAuth = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-    useEffect(() => {
-        const cookieString = document.cookie;
-        const token = cookieString
-         .split('; ')
-         .find(row => row.startsWith('authToken'))
-         ?.split('=')[1];
-      setIsLoggedIn(!!token);
-    }, []);
-  
-    const logout = () => {
-      document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = Cookie.get('authToken');
+    if (token) {
+      const decodedToken = jwt.decode(token) as { role: string };
+      setUserRole(decodedToken.role);
+      setIsLoggedIn(true);
+    } else {
       setIsLoggedIn(false);
-      window.location.href = '/login'
-    };
-  
-    return { isLoggedIn, logout };
+      setUserRole(null);
+    }
+  }, []);
+
+  const logout = () => {
+    Cookie.remove('authToken');
+    setIsLoggedIn(false);
+    setUserRole(null);
+    window.location.href = '/login';
   };
 
-  
-  
-  export default useAuth;
-  
+  return { isLoggedIn, userRole, logout };
+};
+
+export default useAuth;

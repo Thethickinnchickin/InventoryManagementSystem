@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import { Order } from '../entities/order.entity';
 import { CreateOrderDto } from '../dtos/create-order.dto';
 import { UpdateOrderDto } from '../dtos/update-order.dto';
 import { OrderItem } from '../entities/order-item.entity';
-import { AuditService } from './audit.service'; // Import the AuditService
+import { AuditService } from './audit.service';
 
 @Injectable()
 export class OrdersService {
@@ -14,10 +14,10 @@ export class OrdersService {
     private ordersRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private orderItemsRepository: Repository<OrderItem>,
-    private readonly auditService: AuditService, // Inject the AuditService
+    private readonly auditService: AuditService,
+    
   ) {}
-  
-  // OrdersService.ts
+
   async findAll(
     page: number = 1,
     limit: number = 10,
@@ -25,28 +25,16 @@ export class OrdersService {
     startDate?: string,
     endDate?: string
   ): Promise<{ orders: Order[], total: number, totalPages: number }> {
-    // Build the query options
     const queryOptions: any = {
-      where: { deletedAt: null }, // Ensure only non-deleted orders are returned
-      relations: ['items', 'items.product'], // Include both items and their associated product
+      where: { deletedAt: null },
+      relations: ['items', 'items.product'],
       skip: (page - 1) * limit,
       take: limit,
     };
 
-    // Add filtering conditions
     if (customerName) {
       queryOptions.where.customerName = customerName;
     }
-
-    // if (startDate || endDate) {
-    //   queryOptions.where.createdAt = {};
-    //   if (startDate) {
-    //     queryOptions.where.createdAt['$gte'] = new Date(startDate);
-    //   }
-    //   if (endDate) {
-    //     queryOptions.where.createdAt['$lte'] = new Date(endDate);
-    //   }
-    // }
 
     const [orders, total] = await this.ordersRepository.findAndCount(queryOptions);
 
@@ -57,11 +45,17 @@ export class OrdersService {
     };
   }
 
-
   findOne(id: number): Promise<Order> {
     return this.ordersRepository.findOne({
-      where: { id, deletedAt: null }, // Ensure the order is not deleted
+      where: { id, deletedAt: null },
       relations: ['items'],
+    });
+  }
+
+  async findOrdersByUser(userId: number): Promise<Order[]> {
+    return this.ordersRepository.find({
+      where: { user: { id: userId } },
+      relations: ['items'],  // Optionally include related entities
     });
   }
 
@@ -69,22 +63,20 @@ export class OrdersService {
     const order = this.ordersRepository.create(createOrderDto);
     const savedOrder = await this.ordersRepository.save(order);
 
-    if (createOrderDto.items) {
-      const items = createOrderDto.items.map((item) => ({
+    if (createOrderDto.items && createOrderDto.items.length > 0) {
+      const items: DeepPartial<OrderItem>[] = createOrderDto.items.map(item => ({
         ...item,
-        order: savedOrder, // Associate the item with the saved order
+        order: savedOrder,
       }));
       await this.orderItemsRepository.save(items);
     }
 
-    // Log the creation action
     await this.auditService.logAction('Order', savedOrder.id, 'CREATE', createOrderDto);
 
     return this.findOne(savedOrder.id);
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto): Promise<Order> {
-    // Update the order details
     await this.ordersRepository.update(id, {
       customerName: updateOrderDto.customerName,
       shippingAddress: updateOrderDto.shippingAddress,
@@ -93,20 +85,15 @@ export class OrdersService {
 
     const existingOrder = await this.findOne(id);
 
-    // Update the order items
-    if (updateOrderDto.items) {
-      // Delete existing items
+    if (updateOrderDto.items && updateOrderDto.items.length > 0) {
       await this.orderItemsRepository.delete({ order: { id } });
-
-      // Insert new items
-      const items = updateOrderDto.items.map((item) => ({
+      const items: DeepPartial<OrderItem>[] = updateOrderDto.items.map(item => ({
         ...item,
-        order: existingOrder, // Associate the item with the existing order
+        order: existingOrder,
       }));
       await this.orderItemsRepository.save(items);
     }
 
-    // Log the update action
     await this.auditService.logAction('Order', id, 'UPDATE', updateOrderDto);
 
     return this.findOne(id);
@@ -116,12 +103,7 @@ export class OrdersService {
     const existingOrder = await this.findOne(id);
 
     if (existingOrder) {
-      
-
-      // Clean up circular references for logging
       const cleanedOrder = this.removeCircularReferences(existingOrder);
-
-      // Log the deletion action
       await this.auditService.logAction('Order', id, 'DELETE', cleanedOrder);
 
       await this.orderItemsRepository.softDelete({ order: { id } });
@@ -129,19 +111,13 @@ export class OrdersService {
     }
   }
 
-  // Utility function to remove circular references
   private removeCircularReferences(order: Order): Order {
-    // Clone the order object
     const cleanedOrder = { ...order };
-
-    // Remove the `order` reference from each item
-    cleanedOrder.items = cleanedOrder.items.map((item) => {
+    cleanedOrder.items = cleanedOrder.items.map(item => {
       const cleanedItem = { ...item };
       delete cleanedItem.order;
       return cleanedItem;
     });
-
     return cleanedOrder;
   }
-
 }

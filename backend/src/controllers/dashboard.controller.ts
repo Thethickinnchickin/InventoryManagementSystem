@@ -1,13 +1,13 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
-import { Order } from 'src/entities/order.entity';
-import { Product } from 'src/entities/product.entity';
-import { OrderItem } from 'src/entities/order-item.entity';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { UserRole } from 'src/entities/user.entity';
+import { Order } from '../entities/order.entity';
+import { Product } from '../entities/product.entity';
+import { OrderItem } from '../entities/order-item.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { UserRole } from '../entities/user.entity';
 
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
