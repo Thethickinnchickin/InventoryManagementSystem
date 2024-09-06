@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { CreateProductDto } from '../dtos/create-product.dto';
 import { UpdateProductDto } from '../dtos/update-product.dto';
@@ -56,14 +56,29 @@ export class ProductsService {
     });
   }
 
+
+
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    // Create a new product entity
-    const product = this.productsRepository.create(createProductDto);
+    // Create a new product entity from the DTO (excluding categories for now)
+    const product = this.productsRepository.create({
+      name: createProductDto.name,
+      description: createProductDto.description,
+      price: createProductDto.price,
+      stock: createProductDto.stock,
+    });
   
-    // Save the new product to the database
+    // Find the categories based on categoryIds using findBy and In
+    if (createProductDto.categoryIds && createProductDto.categoryIds.length > 0) {
+      const categories = await this.categoriesRepository.findBy({
+        id: In(createProductDto.categoryIds),
+      });
+      product.categories = categories;
+    }
+  
+    // Save the product with its categories
     const savedProduct = await this.productsRepository.save(product);
   
-    // Log the creation action with the initial state of the product
+    // Log the creation action
     await this.auditService.logAction(
       'Product', // entityName
       savedProduct.id, // entityId
@@ -73,6 +88,7 @@ export class ProductsService {
   
     return savedProduct;
   }
+  
   
 
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {

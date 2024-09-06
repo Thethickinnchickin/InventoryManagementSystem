@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 import Cookie from 'js-cookie';
 import { parse } from 'cookie';
+import path from 'path';
 // List of protected routes
-const protectedRoutes = ['/admin', '/'];
+const protectedRoutes = ['/admin', '/user', '/user/cart', '/user/checkout'];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  console.log("what the fuck")
+  
 
   // const token = Cookie().get('authToken');
   const cookies = req.headers.get('cookie') || '';
@@ -27,10 +28,12 @@ export function middleware(req: NextRequest) {
   try {
     // Decode the token to get the user data
     const decodedToken = jwt.decode(token) as { role: string };
-    console.log(decodedToken)
     // Check if the user has the necessary role
     const userRole = decodedToken?.role;
-    if ((pathname.startsWith('/reports') || pathname.startsWith('/audit-logs') || pathname.startsWith('/admin'))  && userRole !== 'admin') {
+    if ((pathname.startsWith('/admin/reports') || pathname.startsWith('/audit-logs') 
+      || pathname.startsWith('/admin'))  && userRole !== 'admin') {
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    } else if(pathname.startsWith('/user') && userRole !== 'user') {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
   } catch (error) {
@@ -49,5 +52,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/audit-logs/:path*', '/reports/:path*', '/orders/:path*', '/admin/:path*'], // Routes where middleware should apply
+  matcher: ['/audit-logs/:path*', '/reports/:path*', '/orders/:path*', '/admin/:path*', '/user/:path*'], // Routes where middleware should apply
 };

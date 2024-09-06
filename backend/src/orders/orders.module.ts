@@ -6,9 +6,10 @@ import { Order } from '../entities/order.entity';
 import { OrderItem } from '../entities/order-item.entity';
 import { AuditLog } from '../entities/audit-log.entity'; // Import AuditLog entity
 import { AuditService } from '../services/audit.service'; // Import AuditService
+import { Product } from 'src/entities/product.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem, AuditLog])], // Include AuditLog in TypeOrmModule
+  imports: [TypeOrmModule.forFeature([Order, OrderItem, AuditLog, Product])], // Include AuditLog in TypeOrmModule
   controllers: [OrdersController],
   providers: [OrdersService, AuditService], // Provide AuditService
   exports: [OrdersService],

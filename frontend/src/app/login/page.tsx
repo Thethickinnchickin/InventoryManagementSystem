@@ -20,7 +20,6 @@ const LoginPage = () => {
       const decodedToken = jwt.decode(token) as { role: string };
       
       Cookie.set('authToken', token); 
-      console.log('Login successful');
       // Redirect or show success message
       if(decodedToken.role === "admin") {
         window.location.href = "/admin"

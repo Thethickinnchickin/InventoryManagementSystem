@@ -6,6 +6,7 @@ import { CreateOrderDto } from '../dtos/create-order.dto';
 import { UpdateOrderDto } from '../dtos/update-order.dto';
 import { OrderItem } from '../entities/order-item.entity';
 import { AuditService } from './audit.service';
+import { Product } from 'src/entities/product.entity';
 
 @Injectable()
 export class OrdersService {
@@ -14,6 +15,8 @@ export class OrdersService {
     private ordersRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private orderItemsRepository: Repository<OrderItem>,
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>,
     private readonly auditService: AuditService,
     
   ) {}
@@ -45,12 +48,13 @@ export class OrdersService {
     };
   }
 
-  findOne(id: number): Promise<Order> {
+  async findOne(orderId: number): Promise<Order> {
     return this.ordersRepository.findOne({
-      where: { id, deletedAt: null },
-      relations: ['items'],
+      where: { id: orderId },
+      relations: ['items', 'items.product'], // Ensure the product is included in the relations.
     });
   }
+  
 
   async findOrdersByUser(userId: number): Promise<Order[]> {
     return this.ordersRepository.find({
@@ -62,20 +66,30 @@ export class OrdersService {
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     const order = this.ordersRepository.create(createOrderDto);
     const savedOrder = await this.ordersRepository.save(order);
-
+  
     if (createOrderDto.items && createOrderDto.items.length > 0) {
-      const items: DeepPartial<OrderItem>[] = createOrderDto.items.map(item => ({
-        ...item,
-        order: savedOrder,
-      }));
+      const items: DeepPartial<OrderItem>[] = await Promise.all(
+        createOrderDto.items.map(async item => {
+          const product = await this.productsRepository.findOneBy({ id: item.productId }); // Find the product by productId
+          if (!product) {
+            throw new Error(`Product with ID ${item.productId} not found`);
+          }
+          return {
+            ...item,
+            order: savedOrder,
+            product, // Associate the product with the order item
+          };
+        })
+      );
+  
       await this.orderItemsRepository.save(items);
     }
-
+  
     await this.auditService.logAction('Order', savedOrder.id, 'CREATE', createOrderDto);
-
+  
     return this.findOne(savedOrder.id);
   }
-
+  
   async update(id: number, updateOrderDto: UpdateOrderDto): Promise<Order> {
     await this.ordersRepository.update(id, {
       customerName: updateOrderDto.customerName,

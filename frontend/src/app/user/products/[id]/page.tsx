@@ -5,10 +5,18 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import styles from './ProductDetailsPage.module.css';
 
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+}
+
 const ProductDetailsPage: React.FC = () => {
   const { id } = useParams();  // Access the route parameter here
   const router = useRouter();
   const [product, setProduct] = useState<any>(null);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -25,6 +33,30 @@ const ProductDetailsPage: React.FC = () => {
     fetchProduct();
   }, [id]);  // Use id directly here
 
+  const addToCart = (product: Product) => {
+    const storedCart = localStorage.getItem('cart');
+    let cart = storedCart ? JSON.parse(storedCart) : [];
+
+    const existingItem = cart.find((item: Product) => item.id === product.id);
+
+    if (existingItem) {
+      // If the product is already in the cart, increase its quantity
+      cart = cart.map((item: Product) =>
+        item.id === product.id ? { ...item, quantity: (item.quantity || 1) + 1 } : item
+      );
+    } else {
+      // Add the new product to the cart with an initial quantity of 1
+      cart.push({ ...product, quantity: quantity });
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    alert(`${product.name} has been added to your cart!`);
+  };
+
+  const changeQuantity = (newQuantity: number) => {
+    setQuantity(newQuantity);
+  }
+
   if (!product) return <div>Loading...</div>;
 
   return (
@@ -32,7 +64,14 @@ const ProductDetailsPage: React.FC = () => {
       <h1 className={styles.heading}>{product.name}</h1>
       <p className={styles.description}>{product.description}</p>
       <p className={styles.price}>Price: ${product.price}</p>
-      <button className={styles.button} onClick={() => router.back()}>Back to Products</button>
+      <p className={styles.price}>Quantity</p>
+      <input type='number' onChange={(e) => changeQuantity(parseInt(e.target.value))} className={styles.quantity}></input>
+      <button className={styles.button} onClick={() => addToCart(product)}>
+        Add to Cart
+      </button>
+      <button className={styles.button} onClick={() => router.back()}>
+        Back to Products
+      </button>
     </div>
   );
 };

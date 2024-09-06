@@ -39,8 +39,10 @@ export class OrdersController {
   }
 
   @Post()
-  @Roles(UserRole.ADMIN)
-  create(@Body() createOrderDto: CreateOrderDto): Promise<Order> {
+  @Roles(UserRole.ADMIN, UserRole.USER)
+  create(@Body() createOrderDto: CreateOrderDto, @Req() req: AuthenticatedRequest,): Promise<Order> {
+    const user: User = req.user as unknown as User; 
+    createOrderDto.user = user;
     return this.ordersService.create(createOrderDto);
   }
 

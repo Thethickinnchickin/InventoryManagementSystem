@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 import * as bcrypt from 'bcrypt'; // Import bcrypt here
@@ -52,4 +52,21 @@ export class UsersService {
   async remove(id: number): Promise<void> {
     await this.usersRepository.delete(id);
   }
+
+  async changePassword(userId: number, hashedPassword: string): Promise<void> {
+    await this.usersRepository.update(userId, { password: hashedPassword });
+  }
+  
+
+  async changeUsername(id: number, newUsername: string): Promise<User> {
+    const existingUser = await this.findByUsername(newUsername);
+    if (existingUser && existingUser.id !== id) {
+      throw new Error('Username is already taken');
+    }
+  
+    await this.usersRepository.update(id, { username: newUsername });
+    return this.findOne(id);
+  }
+  
+  
 }

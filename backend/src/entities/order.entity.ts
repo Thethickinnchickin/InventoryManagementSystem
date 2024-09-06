@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, DeleteDateColumn, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, DeleteDateColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { OrderItem } from './order-item.entity';
 import { User } from './user.entity';
 
@@ -20,6 +20,7 @@ export class Order {
   items: OrderItem[];
 
   @ManyToOne(() => User, user => user.orders)  // Define the relationship
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @DeleteDateColumn() // Add this to track soft deletes

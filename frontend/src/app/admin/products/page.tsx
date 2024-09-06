@@ -51,12 +51,20 @@ export default function ProductsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = editId ? 'PUT' : 'POST';
+    const cookieString = document.cookie;
+    const token = cookieString
+      .split('; ')
+      .find(row => row.startsWith('authToken'))
+      ?.split('=')[1];
     const url = editId ? `http://localhost:3000/products/${editId}` : 'http://localhost:3000/products';
 
     try {
       const response = await axios({
         method,
         url,
+        headers : {
+          Authorization: `Bearer ${token}`
+        },
         data: {
           name,
           description,
@@ -86,7 +94,14 @@ export default function ProductsPage() {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:3000/products/${id}`);
+      const cookieString = document.cookie;
+      const token = cookieString
+        .split('; ')
+        .find(row => row.startsWith('authToken'))
+        ?.split('=')[1];
+      const response = await axios.delete(`http://localhost:3000/products/${id}`, {
+        headers: {Authorization: `Bearer ${token}`}
+      });
 
       if (response.status === 200) {
         setProducts((prev) => prev.filter((product) => product.id !== id));
@@ -100,6 +115,7 @@ export default function ProductsPage() {
     const { value, checked } = e.target;
     const categoryId = Number(value);
     const selectedCategory = categories.find((category) => category.id === categoryId);
+    
 
     setSelectedCategories((prev) => {
       if (checked) {
@@ -115,7 +131,14 @@ export default function ProductsPage() {
 
   const handleEdit = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:3000/products/${id}`);
+      const cookieString = document.cookie;
+      const token = cookieString
+        .split('; ')
+        .find(row => row.startsWith('authToken'))
+        ?.split('=')[1];
+      const response = await axios.get(`http://localhost:3000/products/${id}`, {
+        headers: {Authorization: `Bearer ${token}`}
+      });
       const data = response.data;
       setName(data.name);
       setDescription(data.description);

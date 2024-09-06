@@ -58,7 +58,6 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   updateCategories(@Param('id') id: number, @Body('categoryIds') categoryIds: number[]): Promise<Product> {
-    console.log(categoryIds)
     return this.productsService.updateProductCategories(id, categoryIds);
   }
 

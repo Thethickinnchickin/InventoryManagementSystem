@@ -29,7 +29,6 @@ const ProductsPage: React.FC = () => {
         {products.length > 0 ? (
           products.map(product => (
             <div key={product.id} className={styles.productCard}>
-              <img src={`/images/${product.image || 'placeholder.png'}`} alt={product.name} className={styles.productImage} />
               <h2 className={styles.productName}>{product.name}</h2>
               <p className={styles.productDescription}>{product.description}</p>
               <p className={styles.productPrice}>${product.price}</p>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from './ProfilePage.module.css';
+import { headers } from 'next/headers';
 
 interface UserProfile {
   username: string;
@@ -17,6 +18,7 @@ const ProfilePage = () => {
     confirmPassword: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -26,6 +28,7 @@ const ProfilePage = () => {
           .split('; ')
           .find(row => row.startsWith('authToken'))
           ?.split('=')[1];
+
         const response = await axios.get('http://localhost:3000/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -43,8 +46,41 @@ const ProfilePage = () => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleUsernameChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+
+    // Confirmation dialog
+    const confirmed = window.confirm(
+      'Are you sure you want to change your username? You will be logged out and need to log back in.'
+    );
+    if (!confirmed) {
+      return; // Abort the process if the user cancels
+    }
+
+    try {
+      const cookieString = document.cookie;
+      const token = cookieString
+        .split('; ')
+        .find(row => row.startsWith('authToken'))
+        ?.split('=')[1];
+      
+      await axios.put('http://localhost:3000/profile/username', { username: profile.username }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      alert('Username updated successfully. You will now be redirected to the login page.');
+      window.location.href = "/login"; // Redirect to login after updating username
+    } catch (error) {
+      console.error('Error updating username:', error);
+      setError('Failed to update username.');
+    }
+  };
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
 
     if (profile.password !== profile.confirmPassword) {
       setError('Passwords do not match.');
@@ -52,14 +88,23 @@ const ProfilePage = () => {
     }
 
     try {
-      await axios.put('http://localhost:3000/profile', {
-        username: profile.username,
-        password: profile.password,
+      const cookieString = document.cookie;
+      const token = cookieString
+      .split('; ')
+      .find(row => row.startsWith('authToken'))
+      ?.split('=')[1];
+      await axios.put('http://localhost:3000/profile/password', 
+        {
+          password: profile.password,
+          confirmPassword: profile.confirmPassword
+        }, {
+        headers: { Authorization: `Bearer ${token}` },
+        
       });
-      alert('Profile updated successfully!');
+      setSuccessMessage('Password updated successfully!');
     } catch (error) {
-      console.error('Error updating profile:', error);
-      setError('Failed to update profile information.');
+      console.error('Error updating password:', error);
+      setError('Failed to update password.');
     }
   };
 
@@ -67,7 +112,10 @@ const ProfilePage = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>Profile</h1>
       {error && <p className={styles.error}>{error}</p>}
-      <form className={styles.profileForm} onSubmit={handleSubmit}>
+      {successMessage && <p className={styles.success}>{successMessage}</p>}
+      
+      {/* Username change form */}
+      <form className={styles.profileForm} onSubmit={handleUsernameChange}>
         <div className={styles.formGroup}>
           <label className={styles.label} htmlFor="username">
             Username
@@ -81,6 +129,13 @@ const ProfilePage = () => {
             className={styles.input}
           />
         </div>
+        <button type="submit" className={styles.button}>
+          Change Username
+        </button>
+      </form>
+
+      {/* Password change form */}
+      <form className={styles.profileForm} onSubmit={handlePasswordChange}>
         <div className={styles.formGroup}>
           <label className={styles.label} htmlFor="password">
             New Password
@@ -108,7 +163,7 @@ const ProfilePage = () => {
           />
         </div>
         <button type="submit" className={styles.button}>
-          Save Changes
+          Change Password
         </button>
       </form>
     </div>

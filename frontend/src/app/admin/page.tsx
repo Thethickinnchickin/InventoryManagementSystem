@@ -40,10 +40,8 @@ const DashboardPage = () => {
               headers: { Authorization: `Bearer ${token}` },
               withCredentials: true,
             });
-            console.log(response)
             
             setMetrics(response.data);
-            console.log('Protected data:', response.data);
           } catch (error) {
             console.error('Failed to fetch protected data', error);
           }
