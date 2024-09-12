@@ -1,5 +1,5 @@
 // src/orders/dto/create-order-item.dto.ts
-import { IsNotEmpty, IsInt, IsDecimal } from 'class-validator';
+import { IsNotEmpty, IsInt, IsNumber } from 'class-validator';
 
 export class CreateOrderItemDto {
   @IsNotEmpty()
@@ -15,6 +15,6 @@ export class CreateOrderItemDto {
   quantity: number;
 
   @IsNotEmpty()
-  @IsDecimal()
+  @IsNumber({ allowNaN: false, maxDecimalPlaces: 2 }, { message: 'price must be a valid number with up to 2 decimal places' })
   price: number;
 }

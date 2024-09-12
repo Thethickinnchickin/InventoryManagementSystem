@@ -11,7 +11,7 @@ export class UpdateProductCategoryDto {
   description?: string;
 
   @IsOptional()
-  @IsDecimal({ decimal_digits: '2' })
+  @IsNumber({maxDecimalPlaces: 2})
   price?: number;
 
   @IsOptional()

@@ -1,17 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from '../services/users.service';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../entities/user.entity';
 
 describe('UsersController', () => {
   let controller: UsersController;
   let usersService: UsersService;
+
+  const mockUsers: User[] = [
+    { id: 1, username: 'admin', password: 'admin', role: UserRole.ADMIN } as User,
+    { id: 2, username: 'user', password: 'user', role: UserRole.USER } as User,
+  ];
+
+  const mockUser: User = { id: 1, username: 'admin', password: 'admin', role: UserRole.ADMIN } as User;
+
+  const mockCreateUserDto: CreateUserDto = { username: 'newuser', password: 'password', role: UserRole.USER };
+
+  const mockUpdateUserDto: UpdateUserDto = { username: 'updateduser', password: 'NewPassword'};
+
+  const mockUsersService = {
+    findAll: jest.fn().mockResolvedValue(mockUsers),
+    findOne: jest.fn().mockResolvedValue(mockUser),
+    create: jest.fn().mockResolvedValue({ ...mockUser, ...mockCreateUserDto }),
+    update: jest.fn().mockResolvedValue({ ...mockUser, ...mockUpdateUserDto }),
+    remove: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,16 +37,15 @@ describe('UsersController', () => {
       providers: [
         {
           provide: UsersService,
-          useValue: {
-            findAll: jest.fn(),
-            findOne: jest.fn(),
-            create: jest.fn(),
-            update: jest.fn(),
-            remove: jest.fn(),
-          },
+          useValue: mockUsersService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<UsersController>(UsersController);
     usersService = module.get<UsersService>(UsersService);
@@ -36,52 +53,43 @@ describe('UsersController', () => {
 
   describe('findAll', () => {
     it('should return an array of users', async () => {
-      const result: User[] = [
-        { id: 1, username: 'user1', password: 'password1', role: UserRole.USER },
-        { id: 2, username: 'user2', password: 'password2', role: UserRole.ADMIN },
-      ];
-      jest.spyOn(usersService, 'findAll').mockResolvedValue(result);
-
-      expect(await controller.findAll()).toBe(result);
+      const result = await controller.findAll();
+      expect(result).toEqual(mockUsers);
+      expect(usersService.findAll).toHaveBeenCalled();
     });
   });
 
   describe('findOne', () => {
     it('should return a single user', async () => {
-      const result: User = { id: 1, username: 'user1', password: 'password1', role: UserRole.USER };
-      jest.spyOn(usersService, 'findOne').mockResolvedValue(result);
-
-      expect(await controller.findOne(1)).toBe(result);
+      const id = 1;
+      const result = await controller.findOne(id);
+      expect(result).toEqual(mockUser);
+      expect(usersService.findOne).toHaveBeenCalledWith(id);
     });
   });
 
   describe('create', () => {
     it('should create a new user', async () => {
-      const createUserDto: CreateUserDto = { username: 'newuser', password: 'newpassword',  };
-      const result: User = { id: 1, username: 'newuser', password: 'newpassword' , role: UserRole.USER };
-      jest.spyOn(usersService, 'create').mockResolvedValue(result);
-
-      expect(await controller.create(createUserDto)).toBe(result);
+      const result = await controller.create(mockCreateUserDto);
+      expect(result).toEqual({ ...mockUser, ...mockCreateUserDto });
+      expect(usersService.create).toHaveBeenCalledWith(mockCreateUserDto);
     });
   });
 
   describe('update', () => {
     it('should update an existing user', async () => {
-      const updateUserDto: UpdateUserDto = {
-        username: 'updateduser',
-      };
-      const result: User = { id: 1, username: 'updateduser', password: 'password1', role: UserRole.USER };
-      jest.spyOn(usersService, 'update').mockResolvedValue(result);
-
-      expect(await controller.update(1, updateUserDto)).toBe(result);
+      const id = 1;
+      const result = await controller.update(id, mockUpdateUserDto);
+      expect(result).toEqual({ ...mockUser, ...mockUpdateUserDto });
+      expect(usersService.update).toHaveBeenCalledWith(id, mockUpdateUserDto);
     });
   });
 
   describe('remove', () => {
     it('should remove a user', async () => {
-      jest.spyOn(usersService, 'remove').mockResolvedValue(undefined);
-
-      await expect(controller.remove(1)).resolves.toBeUndefined();
+      const id = 1;
+      await controller.remove(id);
+      expect(usersService.remove).toHaveBeenCalledWith(id);
     });
   });
 });

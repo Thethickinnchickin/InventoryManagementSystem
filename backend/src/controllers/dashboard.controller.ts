@@ -31,7 +31,6 @@ export class DashboardController {
 
     // Get the total number of orders
     const totalOrders = await this.orderRepository.count();
-
     // Find top-selling products (by total sales)
     const topProducts = await this.orderItemRepository
     .createQueryBuilder('order_item')
@@ -53,6 +52,7 @@ export class DashboardController {
       },
       select: ['id', 'name', 'stock'],
     });
+    
 
     return {
       revenue: totalRevenue,

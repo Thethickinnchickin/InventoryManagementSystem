@@ -1,5 +1,4 @@
-// src/products/dto/create-product.dto.ts
-import { IsNotEmpty, IsString, IsDecimal, IsInt, Min, MaxLength, IsOptional, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsInt, Min, MaxLength, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateProductDto {
   @IsNotEmpty()
@@ -12,7 +11,7 @@ export class CreateProductDto {
   description: string;
 
   @IsNotEmpty()
-  @IsDecimal()
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'price must be a number with up to 2 decimal places' })
   price: number;
 
   @IsInt()

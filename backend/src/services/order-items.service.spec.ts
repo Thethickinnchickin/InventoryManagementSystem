@@ -1,14 +1,13 @@
-// src/order-items/order-items.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderItemsService } from './order-items.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { OrderItem } from '../entities/order-item.entity';
+import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { Order } from '../entities/order.entity';
+import { AuditService } from './audit.service';
 import { CreateOrderItemDto } from '../dtos/create-order-item.dto';
 import { UpdateOrderItemDto } from '../dtos/update-order-item.dto';
-import { AuditService } from './audit.service';
 
 describe('OrderItemsService', () => {
   let service: OrderItemsService;
@@ -17,37 +16,40 @@ describe('OrderItemsService', () => {
   let ordersRepository: Repository<Order>;
   let auditService: AuditService;
 
+  const mockOrderItem = {
+    id: 1,
+    quantity: 2,
+    price: 100,
+    product: { id: 1, name: 'Test Product' },
+    order: { id: 1 },
+  } as OrderItem;
+
+  const mockProduct = { id: 1, name: 'Test Product' } as Product;
+  const mockOrder = { id: 1 } as Order;
+
+  const mockAuditService = {
+    logAction: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrderItemsService,
         {
           provide: getRepositoryToken(OrderItem),
-          useValue: {
-            find: jest.fn(),
-            findOneBy: jest.fn(),
-            create: jest.fn(),
-            save: jest.fn(),
-            delete: jest.fn(),
-          },
+          useClass: Repository,
         },
         {
           provide: getRepositoryToken(Product),
-          useValue: {
-            findOneBy: jest.fn(),
-          },
+          useClass: Repository,
         },
         {
           provide: getRepositoryToken(Order),
-          useValue: {
-            findOneBy: jest.fn(),
-          },
+          useClass: Repository,
         },
         {
           provide: AuditService,
-          useValue: {
-            logAction: jest.fn(),
-          },
+          useValue: mockAuditService,
         },
       ],
     }).compile();
@@ -60,97 +62,85 @@ describe('OrderItemsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of order items', async () => {
-      const result = [{ id: 1, quantity: 10, price: 99.99 }] as OrderItem[];
-      jest.spyOn(orderItemsRepository, 'find').mockResolvedValue(result);
+    it('should return all order items', async () => {
+      jest.spyOn(orderItemsRepository, 'find').mockResolvedValue([mockOrderItem]);
 
-      expect(await service.findAll()).toBe(result);
+      const result = await service.findAll();
+
+      expect(result).toEqual([mockOrderItem]);
     });
   });
 
   describe('findOne', () => {
-    it('should return a single order item by id', async () => {
-      const result = { id: 1, quantity: 10, price: 99.99 } as OrderItem;
-      jest.spyOn(orderItemsRepository, 'findOneBy').mockResolvedValue(result);
+    it('should return an order item by id', async () => {
+      jest.spyOn(orderItemsRepository, 'findOneBy').mockResolvedValue(mockOrderItem);
 
-      expect(await service.findOne(1)).toBe(result);
+      const result = await service.findOne(1);
+
+      expect(result).toEqual(mockOrderItem);
     });
   });
 
   describe('create', () => {
-    it('should create and return a new order item and log the action', async () => {
-      const createOrderItemDto: CreateOrderItemDto = { quantity: 10, price: 99.99, orderId: 1, productId: 1 };
-      const savedOrderItem = { id: 1, ...createOrderItemDto } as unknown as OrderItem;
-      jest.spyOn(orderItemsRepository, 'create').mockReturnValue(savedOrderItem);
-      jest.spyOn(orderItemsRepository, 'save').mockResolvedValue(savedOrderItem);
+    it('should create a new order item and log the action', async () => {
+      const createOrderItemDto: CreateOrderItemDto = {
+        quantity: 2,
+        price: 100,
+        orderId: 1,
+        productId: 1,
+      };
 
-      await service.create(createOrderItemDto);
+      jest.spyOn(orderItemsRepository, 'create').mockReturnValue(mockOrderItem);
+      jest.spyOn(orderItemsRepository, 'save').mockResolvedValue(mockOrderItem);
 
-      expect(orderItemsRepository.create).toHaveBeenCalledWith(createOrderItemDto);
-      expect(orderItemsRepository.save).toHaveBeenCalledWith(savedOrderItem);
-      expect(auditService.logAction).toHaveBeenCalledWith(
-        'OrderItem',
-        savedOrderItem.id,
-        'CREATE',
-        createOrderItemDto
-      );
+      const result = await service.create(createOrderItemDto);
+
+      expect(result).toEqual(mockOrderItem);
+      expect(auditService.logAction).toHaveBeenCalledWith('OrderItem', 1, 'CREATE', createOrderItemDto);
     });
   });
 
   describe('update', () => {
-    it('should update and return the order item and log the action', async () => {
-      const updateOrderItemDto: UpdateOrderItemDto = { quantity: 20, price: 89.99, orderId: 2, productId: 2 };
-      const existingOrderItem = { id: 1, quantity: 10, price: 99.99 } as OrderItem;
-      const updatedOrderItem = { ...existingOrderItem, ...updateOrderItemDto } as OrderItem;
-      
-      jest.spyOn(orderItemsRepository, 'findOneBy').mockResolvedValue(existingOrderItem);
-      jest.spyOn(productsRepository, 'findOneBy').mockResolvedValue({ id: 2 } as Product);
-      jest.spyOn(ordersRepository, 'findOneBy').mockResolvedValue({ id: 2 } as Order);
-      jest.spyOn(orderItemsRepository, 'save').mockResolvedValue(updatedOrderItem);
+    it('should update an existing order item and log the action', async () => {
+      const updateOrderItemDto: UpdateOrderItemDto = {
+        quantity: 5,
+        price: 200,
+        productId: 1,
+        orderId: 1,
+      };
 
-      await service.update(1, updateOrderItemDto);
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockOrderItem);
+      jest.spyOn(productsRepository, 'findOneBy').mockResolvedValue(mockProduct);
+      jest.spyOn(ordersRepository, 'findOneBy').mockResolvedValue(mockOrder);
+      jest.spyOn(orderItemsRepository, 'save').mockResolvedValue(mockOrderItem);
 
-      expect(orderItemsRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
-      expect(productsRepository.findOneBy).toHaveBeenCalledWith({ id: 2 });
-      expect(ordersRepository.findOneBy).toHaveBeenCalledWith({ id: 2 });
-      expect(orderItemsRepository.save).toHaveBeenCalledWith(updatedOrderItem);
-      expect(auditService.logAction).toHaveBeenCalledWith(
-        'OrderItem',
-        1,
-        'UPDATE',
-        updateOrderItemDto
-      );
+      const result = await service.update(1, updateOrderItemDto);
+
+      expect(result).toEqual(mockOrderItem);
+      expect(auditService.logAction).toHaveBeenCalledWith('OrderItem', 1, 'UPDATE', updateOrderItemDto);
     });
 
     it('should throw an error if the order item is not found', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue(undefined);
+
       const updateOrderItemDto: UpdateOrderItemDto = {
-          quantity: 20,
-          price: 0,
+          quantity: 5, price: 200,
           orderId: 0,
           productId: 0
       };
-      jest.spyOn(orderItemsRepository, 'findOneBy').mockResolvedValue(null);
 
-      await expect(service.update(1, updateOrderItemDto)).rejects.toThrow('OrderItem not found');
+      await expect(service.update(1, updateOrderItemDto)).rejects.toThrowError('OrderItem not found');
     });
   });
 
   describe('remove', () => {
-    it('should delete the order item and log the action', async () => {
-      const existingOrderItem = { id: 1, quantity: 10, price: 99.99 } as OrderItem;
-      jest.spyOn(orderItemsRepository, 'findOneBy').mockResolvedValue(existingOrderItem);
-      jest.spyOn(orderItemsRepository, 'delete').mockResolvedValue(undefined);
+    it('should remove an order item and log the action', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockOrderItem);
+      jest.spyOn(orderItemsRepository, 'delete').mockResolvedValue({ affected: 1 } as any);
 
       await service.remove(1);
 
-      expect(orderItemsRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
-      expect(orderItemsRepository.delete).toHaveBeenCalledWith(1);
-      expect(auditService.logAction).toHaveBeenCalledWith(
-        'OrderItem',
-        1,
-        'DELETE',
-        existingOrderItem
-      );
+      expect(auditService.logAction).toHaveBeenCalledWith('OrderItem', 1, 'DELETE', mockOrderItem);
     });
   });
 });

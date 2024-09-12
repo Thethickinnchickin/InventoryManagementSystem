@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsInt, IsDecimal } from 'class-validator';
+import { IsNotEmpty, IsInt, IsDecimal, IsNumber } from 'class-validator';
 
 
 export class UpdateOrderItemDto {
@@ -7,7 +7,7 @@ export class UpdateOrderItemDto {
   quantity: number;
 
   @IsNotEmpty()
-  @IsDecimal()
+  @IsNumber()
   price: number;
 
   @IsNotEmpty()

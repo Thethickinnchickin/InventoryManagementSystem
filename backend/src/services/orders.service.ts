@@ -6,7 +6,7 @@ import { CreateOrderDto } from '../dtos/create-order.dto';
 import { UpdateOrderDto } from '../dtos/update-order.dto';
 import { OrderItem } from '../entities/order-item.entity';
 import { AuditService } from './audit.service';
-import { Product } from 'src/entities/product.entity';
+import { Product } from '../entities/product.entity';
 
 @Injectable()
 export class OrdersService {
@@ -59,7 +59,7 @@ export class OrdersService {
   async findOrdersByUser(userId: number): Promise<Order[]> {
     return this.ordersRepository.find({
       where: { user: { id: userId } },
-      relations: ['items'],  // Optionally include related entities
+      relations: ['items'],
     });
   }
 
@@ -86,8 +86,7 @@ export class OrdersService {
     }
   
     await this.auditService.logAction('Order', savedOrder.id, 'CREATE', createOrderDto);
-  
-    return this.findOne(savedOrder.id);
+    return savedOrder; 
   }
   
   async update(id: number, updateOrderDto: UpdateOrderDto): Promise<Order> {
@@ -107,31 +106,37 @@ export class OrdersService {
       }));
       await this.orderItemsRepository.save(items);
     }
+    const updatedOrder = await this.findOne(id);
 
     await this.auditService.logAction('Order', id, 'UPDATE', updateOrderDto);
-
-    return this.findOne(id);
+    
+    return updatedOrder;
   }
 
   async remove(id: number): Promise<void> {
-    const existingOrder = await this.findOne(id);
-
-    if (existingOrder) {
-      const cleanedOrder = this.removeCircularReferences(existingOrder);
-      await this.auditService.logAction('Order', id, 'DELETE', cleanedOrder);
-
-      await this.orderItemsRepository.softDelete({ order: { id } });
-      await this.ordersRepository.softDelete(id);
+    const order = await this.ordersRepository.findOne({ where: { id } });
+    if (!order) {
+      throw new Error('Order not found');
     }
+
+    // Remove order items
+    await this.orderItemsRepository.softDelete({ order: { id } });
+
+    // Remove the order
+    await this.ordersRepository.softDelete(id);
+
+    // Log action
+    await this.auditService.logAction('Order', id, 'DELETE', order);
+    
   }
 
-  private removeCircularReferences(order: Order): Order {
-    const cleanedOrder = { ...order };
-    cleanedOrder.items = cleanedOrder.items.map(item => {
-      const cleanedItem = { ...item };
-      delete cleanedItem.order;
-      return cleanedItem;
-    });
-    return cleanedOrder;
-  }
+  // private removeCircularReferences(order: Order): Order {
+  //   const cleanedOrder = { ...order };
+  //   cleanedOrder.items = cleanedOrder.items.map(item => {
+  //     const cleanedItem = { ...item };
+  //     delete cleanedItem.order;
+  //     return cleanedItem;
+  //   });
+  //   return cleanedOrder;
+  // }
 }

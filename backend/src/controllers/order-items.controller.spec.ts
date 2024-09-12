@@ -7,12 +7,18 @@ import { UpdateOrderItemDto } from '../dtos/update-order-item.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../entities/user.entity';
-import { Order } from '../entities/order.entity';
-import { Product } from '../entities/product.entity';
 
 describe('OrderItemsController', () => {
   let controller: OrderItemsController;
   let service: OrderItemsService;
+
+  const mockOrderItemsService = {
+    findAll: jest.fn(),
+    findOne: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    remove: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,37 +26,25 @@ describe('OrderItemsController', () => {
       providers: [
         {
           provide: OrderItemsService,
-          useValue: {
-            findAll: jest.fn(),
-            findOne: jest.fn(),
-            create: jest.fn(),
-            update: jest.fn(),
-            remove: jest.fn(),
-          },
+          useValue: mockOrderItemsService,
         },
       ],
     })
-    .overrideGuard(JwtAuthGuard)
-    .useValue({})
-    .overrideGuard(RolesGuard)
-    .useValue({})
-    .compile();
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<OrderItemsController>(OrderItemsController);
     service = module.get<OrderItemsService>(OrderItemsService);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
   describe('findAll', () => {
     it('should return an array of order items', async () => {
-      const result: OrderItem[] = [{
-          id: 1, quantity: 10, price: 100,
-          order: new Order,
-          product: new Product
-      }]; // Include all required properties
+      const result: OrderItem[] = [
+        { id: 1, quantity: 10, price: 100, orderId: 1, productId: 1 } as unknown as OrderItem,
+      ];
       jest.spyOn(service, 'findAll').mockResolvedValue(result);
 
       expect(await controller.findAll()).toBe(result);
@@ -59,11 +53,7 @@ describe('OrderItemsController', () => {
 
   describe('findOne', () => {
     it('should return a single order item', async () => {
-      const result: OrderItem = {
-          id: 1, quantity: 10, price: 100,
-          order: new Order,
-          product: new Product
-      }; // Include all required properties
+      const result: OrderItem = { id: 1, quantity: 10, price: 100, orderId: 1, productId: 1 } as unknown as OrderItem;
       jest.spyOn(service, 'findOne').mockResolvedValue(result);
 
       expect(await controller.findOne(1)).toBe(result);
@@ -71,17 +61,9 @@ describe('OrderItemsController', () => {
   });
 
   describe('create', () => {
-    it('should create and return a new order item', async () => {
-      const createOrderItemDto: CreateOrderItemDto = {
-          quantity: 10, price: 100,
-          orderId: 0,
-          productId: 0
-      }; // Include required properties
-      const result: OrderItem = {
-          id: 1, quantity: 10, price: 100,
-          order: new Order,
-          product: new Product
-      }; // Include all required properties
+    it('should create and return an order item', async () => {
+      const createOrderItemDto: CreateOrderItemDto = { orderId: 1, productId: 1, quantity: 5, price: 50 };
+      const result: OrderItem = { id: 1, ...createOrderItemDto } as unknown as OrderItem;
       jest.spyOn(service, 'create').mockResolvedValue(result);
 
       expect(await controller.create(createOrderItemDto)).toBe(result);
@@ -89,17 +71,9 @@ describe('OrderItemsController', () => {
   });
 
   describe('update', () => {
-    it('should update and return the updated order item', async () => {
-      const updateOrderItemDto: UpdateOrderItemDto = {
-          quantity: 15, price: 150,
-          orderId: 0,
-          productId: 0
-      }; // Include required properties
-      const result: OrderItem = {
-          id: 1, quantity: 15, price: 150,
-          order: new Order,
-          product: new Product
-      }; // Include all required properties
+    it('should update and return an order item', async () => {
+      const updateOrderItemDto: UpdateOrderItemDto = { quantity: 15, price: 75, orderId: 1, productId: 1 };
+      const result: OrderItem = { id: 1, ...updateOrderItemDto } as unknown as OrderItem;
       jest.spyOn(service, 'update').mockResolvedValue(result);
 
       expect(await controller.update(1, updateOrderItemDto)).toBe(result);
@@ -107,10 +81,10 @@ describe('OrderItemsController', () => {
   });
 
   describe('remove', () => {
-    it('should remove the order item', async () => {
-      jest.spyOn(service, 'remove').mockResolvedValue();
+    it('should remove an order item', async () => {
+      jest.spyOn(service, 'remove').mockResolvedValue(undefined);
 
-      expect(await controller.remove(1)).toBeUndefined();
+      await expect(controller.remove(1)).resolves.toBeUndefined();
     });
   });
 });

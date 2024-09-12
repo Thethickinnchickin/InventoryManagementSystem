@@ -11,5 +11,5 @@ export class CreateUserDto {
   password: string;
 
   @IsOptional()
-  role: UserRole; // 'user' or 'admin'
+  role?: UserRole; // 'user' or 'admin'
 }

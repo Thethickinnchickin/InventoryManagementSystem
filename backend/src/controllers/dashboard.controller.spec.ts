@@ -4,6 +4,7 @@ import { Order } from '../entities/order.entity';
 import { Product } from '../entities/product.entity';
 import { OrderItem } from '../entities/order-item.entity';
 import { Repository } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../entities/user.entity';
@@ -19,67 +20,54 @@ describe('DashboardController', () => {
       controllers: [DashboardController],
       providers: [
         {
-          provide: Repository,
+          provide: getRepositoryToken(Order),
           useValue: {
             createQueryBuilder: jest.fn(),
             count: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(Product),
+          useValue: {
             find: jest.fn(),
           },
         },
+        {
+          provide: getRepositoryToken(OrderItem),
+          useValue: {
+            createQueryBuilder: jest.fn(),
+          },
+        },
       ],
-    })
-    .overrideGuard(JwtAuthGuard)
-    .useValue({})
-    .overrideGuard(RolesGuard)
-    .useValue({})
-    .compile();
+    }).compile();
 
     controller = module.get<DashboardController>(DashboardController);
-    orderRepository = module.get<Repository<Order>>(Repository);
-    productRepository = module.get<Repository<Product>>(Repository);
-    orderItemRepository = module.get<Repository<OrderItem>>(Repository);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+    orderRepository = module.get<Repository<Order>>(getRepositoryToken(Order));
+    productRepository = module.get<Repository<Product>>(getRepositoryToken(Product));
+    orderItemRepository = module.get<Repository<OrderItem>>(getRepositoryToken(OrderItem));
   });
 
   describe('getDashboardMetrics', () => {
     it('should return dashboard metrics', async () => {
-      // Mock data
-      const totalRevenueResult = { totalRevenue: '1000' };
+      const totalRevenue = 1000;
       const totalOrders = 50;
       const topProducts = [
         { product_id: 1, name: 'Product A', total_sales: 500 },
-        { product_id: 2, name: 'Product B', total_sales: 400 },
+        { product_id: 2, name: 'Product B', total_sales: 300 },
       ];
-      const lowStock: Product[] = [
-        { 
-          id: 1,
-          name: 'Product C',
-          stock: 50,
-          description: 'A product with low stock', // Add required fields here
-          price: 10.0,
-          categories: [], // Or mock appropriate data for categories
-        },
-        { 
-          id: 2,
-          name: 'Product D',
-          stock: 75,
-          description: 'Another product with low stock', // Add required fields here
-          price: 15.0,
-          categories: [], // Or mock appropriate data for categories
-        },
+      const lowStock = [
+        { id: 1, name: 'Low Stock Product', stock: 50 },
       ];
 
-      // Mock the repository methods
-      jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValueOnce({
+      // Mock the createQueryBuilder method for orderRepository
+      (orderRepository.createQueryBuilder as jest.Mock).mockReturnValue({
         select: jest.fn().mockReturnThis(),
-        getRawOne: jest.fn().mockResolvedValue(totalRevenueResult),
-      } as any);
+        getRawOne: jest.fn().mockResolvedValue({ totalRevenue }),
+        count: jest.fn().mockResolvedValue(totalOrders),
+      });
 
-      jest.spyOn(orderRepository, 'count').mockResolvedValue(totalOrders);
-      jest.spyOn(orderItemRepository, 'createQueryBuilder').mockReturnValueOnce({
+      // Mock the createQueryBuilder method for orderItemRepository
+      (orderItemRepository.createQueryBuilder as jest.Mock).mockReturnValue({
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
         innerJoin: jest.fn().mockReturnThis(),
@@ -88,17 +76,26 @@ describe('DashboardController', () => {
         orderBy: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         getRawMany: jest.fn().mockResolvedValue(topProducts),
-      } as any);
+      });
 
-      jest.spyOn(productRepository, 'find').mockResolvedValue(lowStock);
+      (orderRepository.count as jest.Mock).mockResolvedValue(50);  // Ensure this returns a number
+
+
+      // Mock the find method for productRepository
+      (productRepository.find as jest.Mock).mockResolvedValue(lowStock);
 
       const result = await controller.getDashboardMetrics();
+
       expect(result).toEqual({
-        revenue: 1000,
+        revenue: totalRevenue,
         orders: totalOrders,
         topProducts,
         lowStock,
       });
+
+      expect(orderRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(orderItemRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(productRepository.find).toHaveBeenCalled();
     });
   });
 });

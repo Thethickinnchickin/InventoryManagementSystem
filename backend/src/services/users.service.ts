@@ -10,7 +10,7 @@ import * as bcrypt from 'bcrypt'; // Import bcrypt here
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
   ) {}
 
   findAll(): Promise<User[]> {

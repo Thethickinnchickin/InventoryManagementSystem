@@ -1,9 +1,14 @@
+import { IsString, Matches } from 'class-validator';
+
 export class ChangePasswordDto {
-    password: string;
-    confirmPassword: string;
-  }
-  
-  export class ChangeUsernameDto {
-    username: string;
-  }
-  
+  @IsString()
+  password: string;
+
+  @IsString()
+  confirmPassword: string;
+}
+
+export class ChangeUsernameDto {
+  @IsString()
+  username: string;
+}

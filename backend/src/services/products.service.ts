@@ -21,7 +21,6 @@ export class ProductsService {
     private readonly auditService: AuditService, // Inject the AuditService
   ) {}
 
-
   async findAll({ page = 1, limit = 10, isPaginated = false }): Promise<{ data: Product[]; total: number; page: number; lastPage: number }> {
     if(isPaginated) {
       const [data, total] = await this.productsRepository.findAndCount({
@@ -44,9 +43,6 @@ export class ProductsService {
         lastPage: Math.ceil(total / limit),
       };
     }
-
-
-
   }
 
   findOne(id: number): Promise<Product> {
@@ -55,8 +51,6 @@ export class ProductsService {
       relations: ['categories'], // Ensure categories are loaded
     });
   }
-
-
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     // Create a new product entity from the DTO (excluding categories for now)
@@ -69,12 +63,13 @@ export class ProductsService {
   
     // Find the categories based on categoryIds using findBy and In
     if (createProductDto.categoryIds && createProductDto.categoryIds.length > 0) {
-      const categories = await this.categoriesRepository.findBy({
-        id: In(createProductDto.categoryIds),
+      const categories = await this.categoriesRepository.find({
+        where: {
+          id: In(createProductDto.categoryIds),
+        },
       });
       product.categories = categories;
     }
-  
     // Save the product with its categories
     const savedProduct = await this.productsRepository.save(product);
   
@@ -89,30 +84,29 @@ export class ProductsService {
     return savedProduct;
   }
   
-  
-
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     const existingProduct = await this.findOne(id);
     if (!existingProduct) {
       throw new Error(`Product with ID ${id} not found`);
     }
   
-    // Update product fields
-    await this.productsRepository.update(id, {
-      name: updateProductDto.name,
-      description: updateProductDto.description,
-      price: updateProductDto.price,
-      stock: updateProductDto.stock,
-    });
+    // Preserve existing values if not provided in updateProductDto
+    const updatedProduct = {
+      ...existingProduct,
+      name: updateProductDto.name ?? existingProduct.name,
+      description: updateProductDto.description ?? existingProduct.description,
+      price: updateProductDto.price ?? existingProduct.price,
+      stock: updateProductDto.stock ?? existingProduct.stock,
+    };
   
     // Update categories if provided
     if (updateProductDto.categoryIds && updateProductDto.categoryIds.length > 0) {
       const categories = await this.categoriesRepository.findByIds(updateProductDto.categoryIds);
-      existingProduct.categories = categories;
+      updatedProduct.categories = categories;
     }
   
     // Save the updated product
-    const updatedProduct = await this.productsRepository.save(existingProduct);
+    const savedProduct = await this.productsRepository.save(updatedProduct);
   
     // Log the update action
     await this.auditService.logAction(
@@ -121,12 +115,13 @@ export class ProductsService {
       'UPDATE',
       {
         before: existingProduct,
-        after: updatedProduct
+        after: savedProduct
       }
     );
   
-    return updatedProduct;
+    return savedProduct;
   }
+  
   
   async remove(id: number): Promise<void> {
     // Fetch the product before deletion for audit purposes
@@ -163,17 +158,34 @@ export class ProductsService {
       .getMany();
   }
 
-  async updateProductCategories(productId: number, categoryIds: number[]): Promise<Product> {
-    const product = await this.findOne(productId);
-
-    if (!product) {
-      throw new Error(`Product with ID ${productId} not found`);
+  async updateProductCategories(id: number, categoryIds: number[]): Promise<Product> {
+    const existingProduct = await this.findOne(id);
+    if (!existingProduct) {
+      throw new Error(`Product with ID ${id} not found`);
     }
-
-    const categories = await this.categoriesRepository.findByIds(categoryIds);
-    product.categories = categories;
-
-    return this.productsRepository.save(product);
+  
+    // Store the current categories for audit logging
+    const beforeCategories = existingProduct.categories;
+  
+    // Find new categories
+    const newCategories = await this.categoriesRepository.findByIds(categoryIds);
+    existingProduct.categories = newCategories;
+  
+    // Save updated product
+    const updatedProduct = await this.productsRepository.save(existingProduct);
+  
+    // Log the action
+    await this.auditService.logAction(
+      'Product',
+      id,
+      'UPDATE_CATEGORIES',
+      {
+        before: beforeCategories,
+        after: newCategories,
+      }
+    );
+  
+    return updatedProduct;
   }
-
+  
 }

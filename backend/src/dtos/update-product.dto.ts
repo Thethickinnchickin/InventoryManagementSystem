@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsDecimal, IsInt, MinLength, Min, IsNumber } from 'class-validator';
+import { Int32 } from 'typeorm';
 
 export class UpdateProductDto {
   @IsOptional()
@@ -11,7 +12,7 @@ export class UpdateProductDto {
   description?: string;
 
   @IsOptional()
-  @IsDecimal({ decimal_digits: '2' })
+  @IsNumber({maxDecimalPlaces: 2})
   price?: number;
 
   @IsOptional()
@@ -22,4 +23,5 @@ export class UpdateProductDto {
   @IsNumber({}, { each: true })
   @IsOptional()
   categoryIds?: number[];
+
 }

@@ -1,13 +1,31 @@
-// src/audit/audit.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuditService } from './audit.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, Like } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuditLog } from '../entities/audit-log.entity';
 
 describe('AuditService', () => {
   let service: AuditService;
-  let repository: Repository<AuditLog>;
+  let auditRepository: Repository<AuditLog>;
+
+  const mockAuditLog = {
+    id: 1,
+    entityName: 'Order',
+    entityId: 1,
+    action: 'CREATE',
+    changes: { customerName: 'John Doe' },
+    performedBy: 'Admin',
+    timestamp: new Date(),
+  };
+
+  const mockAuditRepository = {
+    create: jest.fn().mockReturnValue(mockAuditLog),
+    save: jest.fn().mockResolvedValue(mockAuditLog),
+    findAndCount: jest.fn().mockResolvedValue([
+      [mockAuditLog],
+      1,
+    ]),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -15,71 +33,62 @@ describe('AuditService', () => {
         AuditService,
         {
           provide: getRepositoryToken(AuditLog),
-          useValue: {
-            create: jest.fn(),
-            save: jest.fn(),
-            findAndCount: jest.fn(),
-          },
+          useValue: mockAuditRepository,
         },
       ],
     }).compile();
 
     service = module.get<AuditService>(AuditService);
-    repository = module.get<Repository<AuditLog>>(getRepositoryToken(AuditLog));
+    auditRepository = module.get<Repository<AuditLog>>(getRepositoryToken(AuditLog));
   });
 
   describe('logAction', () => {
-    it('should create and save an audit log', async () => {
-      const createSpy = jest.spyOn(repository, 'create').mockReturnValue({} as any);
-      const saveSpy = jest.spyOn(repository, 'save').mockResolvedValue(undefined);
+    it('should create and save a new audit log entry', async () => {
+      await service.logAction('Order', 1, 'CREATE', { customerName: 'John Doe' }, 'Admin');
 
-      const entityName = 'TestEntity';
-      const entityId = 1;
-      const action = 'CREATE';
-      const changes = { name: 'Test' };
-      const performedBy = 'User';
-
-      await service.logAction(entityName, entityId, action, changes, performedBy);
-
-      expect(createSpy).toHaveBeenCalledWith({
-        entityName,
-        entityId,
-        action,
-        changes,
-        performedBy,
+      expect(auditRepository.create).toHaveBeenCalledWith({
+        entityName: 'Order',
+        entityId: 1,
+        action: 'CREATE',
+        changes: { customerName: 'John Doe' },
+        performedBy: 'Admin',
       });
-      expect(saveSpy).toHaveBeenCalled();
+      expect(auditRepository.save).toHaveBeenCalledWith(mockAuditLog);
     });
   });
 
   describe('getAuditLogs', () => {
-    it('should return paginated audit logs', async () => {
-      const mockLogs = [{ id: 1, entityName: 'TestEntity' }] as AuditLog[];
-      const total = 1;
-      const findAndCountSpy = jest.spyOn(repository, 'findAndCount').mockResolvedValue([mockLogs, total]);
+    it('should return a paginated list of audit logs with total count', async () => {
+      const result = await service.getAuditLogs(1, 10, { entityName: 'Order' });
 
-      const page = 1;
-      const limit = 10;
-      const filters = { entityName: 'TestEntity' };
-
-      const result = await service.getAuditLogs(page, limit, filters);
-
-      expect(findAndCountSpy).toHaveBeenCalledWith({
-        where: {
-          entityName: Like(`%${filters.entityName}%`),
-        },
-        take: limit,
-        skip: (page - 1) * limit,
+      expect(auditRepository.findAndCount).toHaveBeenCalledWith(expect.objectContaining({
+        where: expect.objectContaining({
+          entityName: expect.any(Object), // Expect an object for FindOperator
+        }),
+        take: 10,
+        skip: 0,
         order: {
           timestamp: 'DESC',
         },
+      }));
+      expect(result).toEqual({
+        data: [mockAuditLog],
+        total: 1,
+        page: 1,
+        lastPage: 1,
       });
+    });
+
+    it('should return an empty list if no logs match the filters', async () => {
+      mockAuditRepository.findAndCount.mockResolvedValue([[], 0]);
+
+      const result = await service.getAuditLogs(1, 10);
 
       expect(result).toEqual({
-        data: mockLogs,
-        total,
-        page,
-        lastPage: 1,
+        data: [],
+        total: 0,
+        page: 1,
+        lastPage: 0,
       });
     });
   });

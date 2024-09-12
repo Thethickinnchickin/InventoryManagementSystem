@@ -5,13 +5,47 @@ import { Product } from '../entities/product.entity';
 import { CreateProductDto } from '../dtos/create-product.dto';
 import { UpdateProductDto } from '../dtos/update-product.dto';
 import { Category } from '../entities/category.entity';
+import { UserRole } from '../entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { UserRole } from '../entities/user.entity';
+import { Repository } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { mock } from 'jest-mock-extended';
 
 describe('ProductsController', () => {
   let controller: ProductsController;
   let service: ProductsService;
+
+  const mockProduct: Product = {
+    id: 1,
+    name: 'Test Product',
+    price: 100.00,
+    stock: 50,
+    description: 'A sample product',
+    categories: [],
+  };
+
+  const mockCategory: Category = {
+    id: 1,
+    name: 'Sample Category',
+    products: [mockProduct],
+  };
+
+  const mockProductsService = {
+    findAll: jest.fn().mockResolvedValue({
+      data: [mockProduct],
+      total: 1,
+      page: 1,
+      lastPage: 1,
+    }),
+    findOne: jest.fn().mockResolvedValue(mockProduct),
+    findCategoriesByProduct: jest.fn().mockResolvedValue([mockCategory]),
+    findProductsByCategory: jest.fn().mockResolvedValue([mockProduct]),
+    create: jest.fn().mockResolvedValue(mockProduct),
+    update: jest.fn().mockResolvedValue(mockProduct),
+    updateProductCategories: jest.fn().mockResolvedValue(mockProduct),
+    remove: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,173 +53,100 @@ describe('ProductsController', () => {
       providers: [
         {
           provide: ProductsService,
-          useValue: {
-            findAll: jest.fn(),
-            findOne: jest.fn(),
-            findCategoriesByProduct: jest.fn(),
-            findProductsByCategory: jest.fn(),
-            create: jest.fn(),
-            update: jest.fn(),
-            updateProductCategories: jest.fn(),
-            remove: jest.fn(),
-          },
+          useValue: mockProductsService,
+        },
+        {
+          provide: getRepositoryToken(Product),
+          useValue: mock(Repository),
+        },
+        {
+          provide: getRepositoryToken(Category),
+          useValue: mock(Repository),
         },
       ],
     })
-    .overrideGuard(JwtAuthGuard)
-    .useValue({})
-    .overrideGuard(RolesGuard)
-    .useValue({})
-    .compile();
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<ProductsController>(ProductsController);
     service = module.get<ProductsService>(ProductsService);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
   describe('findAll', () => {
-    it('should return paginated products list', async () => {
-      const result = {
-        data: [
-          {
-            id: 1,
-            name: 'Product A',
-            description: 'Description for Product A',
-            price: 100,
-            stock: 50,
-            categories: [], // Adjust this to match the actual structure
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ],
+    it('should return a paginated list of products', async () => {
+      const result = await controller.findAll(1, 10, true);
+      expect(result).toEqual({
+        data: [mockProduct],
         total: 1,
         page: 1,
         lastPage: 1,
-      };
-      jest.spyOn(service, 'findAll').mockResolvedValue(result);
-
-      expect(await controller.findAll(1, 10, true)).toBe(result);
+      });
     });
   });
 
   describe('findOne', () => {
-    it('should return a single product', async () => {
-      const result: Product = {
-        id: 1,
-        name: 'Product A',
-        description: 'Description for Product A',
-        price: 100,
-        stock: 50,
-        categories: [], // Adjust this to match the actual structure
-      };
-      jest.spyOn(service, 'findOne').mockResolvedValue(result);
-
-      expect(await controller.findOne(1)).toBe(result);
+    it('should return a single product by id', async () => {
+      const result = await controller.findOne(1);
+      expect(result).toEqual(mockProduct);
     });
   });
 
   describe('getCategoriesByProduct', () => {
-    it('should return categories for a product', async () => {
-      const result: Category[] = [
-        {
-          id: 1,
-          name: 'Category A',
-          products: [], // Adjust this to match the actual structure
-        },
-      ];
-      jest.spyOn(service, 'findCategoriesByProduct').mockResolvedValue(result);
-
-      expect(await controller.getCategoriesByProduct(1)).toBe(result);
+    it('should return categories for a given product', async () => {
+      const result = await controller.getCategoriesByProduct(1);
+      expect(result).toEqual([mockCategory]);
     });
   });
 
   describe('getProductsByCategory', () => {
-    it('should return products for a category', async () => {
-      const result: Product[] = [
-        {
-          id: 1,
-          name: 'Product A',
-          description: 'Description for Product A',
-          price: 100,
-          stock: 50,
-          categories: [], // Adjust this to match the actual structure
-        },
-      ];
-      jest.spyOn(service, 'findProductsByCategory').mockResolvedValue(result);
-
-      expect(await controller.getProductsByCategory('Category A')).toBe(result);
+    it('should return products for a given category', async () => {
+      const result = await controller.getProductsByCategory('Sample Category');
+      expect(result).toEqual([mockProduct]);
     });
   });
 
   describe('create', () => {
-    it('should create and return a new product', async () => {
+    it('should create and return a product', async () => {
       const createProductDto: CreateProductDto = {
-        name: 'Product A',
-        description: 'Description for Product A',
-        price: 100,
-        stock: 50,
+        name: 'New Product',
+        price: 150.00,
+        stock: 30,
+        description: 'A new product',
       };
-      const result: Product = {
-        id: 1,
-        name: 'Product A',
-        description: 'Description for Product A',
-        price: 100,
-        stock: 50,
-        categories: [], // Adjust this to match the actual structure
-      };
-      jest.spyOn(service, 'create').mockResolvedValue(result);
 
-      expect(await controller.create(createProductDto)).toBe(result);
+      const result = await controller.create(createProductDto);
+      expect(result).toEqual(mockProduct);
     });
   });
 
   describe('update', () => {
-    it('should update and return the updated product', async () => {
+    it('should update and return a product', async () => {
       const updateProductDto: UpdateProductDto = {
-        name: 'Updated Product A',
-        description: 'Updated description for Product A',
-        price: 150,
-        stock: 30,
+        name: 'Updated Product',
+        price: 120.00,
+        stock: 25,
+        description: 'An updated product',
       };
-      const result: Product = {
-        id: 1,
-        name: 'Updated Product A',
-        description: 'Updated description for Product A',
-        price: 150,
-        stock: 30,
-        categories: [], // Adjust this to match the actual structure
-      };
-      jest.spyOn(service, 'update').mockResolvedValue(result);
 
-      expect(await controller.update(1, updateProductDto)).toBe(result);
+      const result = await controller.update(1, updateProductDto);
+      expect(result).toEqual(mockProduct);
     });
   });
 
   describe('updateCategories', () => {
     it('should update product categories and return the updated product', async () => {
-      const categoryIds = [1, 2];
-      const result: Product = {
-        id: 1,
-        name: 'Product A',
-        description: 'Description for Product A',
-        price: 100,
-        stock: 50,
-        categories: [], // Adjust this to match the actual structure
-      };
-      jest.spyOn(service, 'updateProductCategories').mockResolvedValue(result);
-
-      expect(await controller.updateCategories(1, categoryIds)).toBe(result);
+      const categoryIds = [1];
+      const result = await controller.updateCategories(1, categoryIds);
+      expect(result).toEqual(mockProduct);
     });
   });
 
   describe('remove', () => {
-    it('should remove the product', async () => {
-      jest.spyOn(service, 'remove').mockResolvedValue();
-
-      expect(await controller.remove(1)).toBeUndefined();
+    it('should remove a product by id', async () => {
+      await expect(controller.remove(1)).resolves.toBeUndefined();
     });
   });
 });

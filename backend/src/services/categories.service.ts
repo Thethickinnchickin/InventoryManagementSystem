@@ -39,9 +39,15 @@ export class CategoriesService {
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+    const category = await this.findOne(id); // First, find the category
+    if (!category) {
+      throw new Error('Category not found'); // Throw error if category doesn't exist
+    }
+  
+    // Proceed with the update
     await this.categoriesRepository.update(id, updateCategoryDto);
     const updatedCategory = await this.findOne(id);
-
+  
     // Log the update action
     await this.auditService.logAction(
       'Category',
@@ -49,9 +55,10 @@ export class CategoriesService {
       'UPDATE',
       updateCategoryDto
     );
-
+  
     return updatedCategory;
   }
+  
 
   async remove(id: number): Promise<void> {
     await this.categoriesRepository.delete(id);

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsDecimal, IsArray } from 'class-validator';
+import { IsNotEmpty, IsString, IsDecimal, IsArray, IsNumber } from 'class-validator';
 import { OrderItem } from '../entities/order-item.entity';
 
 export class UpdateOrderDto {
@@ -11,7 +11,7 @@ export class UpdateOrderDto {
   shippingAddress: string;
 
   @IsNotEmpty()
-  @IsDecimal()
+  @IsNumber({maxDecimalPlaces: 2})
   totalAmount: number;
 
   @IsArray()
