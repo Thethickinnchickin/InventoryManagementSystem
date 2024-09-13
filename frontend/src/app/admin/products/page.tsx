@@ -5,14 +5,14 @@ import axios from 'axios';
 import styles from './Products.module.css';
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
-  const [editId, setEditId] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -42,13 +42,13 @@ export default function ProductsPage() {
     fetchCategories();
   }, [page]);
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const method = editId ? 'PUT' : 'POST';
     const cookieString = document.cookie;
@@ -92,7 +92,7 @@ export default function ProductsPage() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: number) => {
     try {
       const cookieString = document.cookie;
       const token = cookieString
@@ -111,7 +111,7 @@ export default function ProductsPage() {
     }
   };
 
-  const handleCategoryChange = (e) => {
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     const categoryId = Number(value);
     const selectedCategory = categories.find((category) => category.id === categoryId);
@@ -129,7 +129,7 @@ export default function ProductsPage() {
     });
   };
 
-  const handleEdit = async (id) => {
+  const handleEdit = async (id: number) => {
     try {
       const cookieString = document.cookie;
       const token = cookieString

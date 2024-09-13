@@ -12,10 +12,14 @@ interface Product {
   price: number;
 }
 
+interface CartItem extends Product {
+  quantity: number;
+}
+
 const ProductDetailsPage: React.FC = () => {
   const { id } = useParams();  // Access the route parameter here
   const router = useRouter();
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
@@ -35,13 +39,13 @@ const ProductDetailsPage: React.FC = () => {
 
   const addToCart = (product: Product) => {
     const storedCart = localStorage.getItem('cart');
-    let cart = storedCart ? JSON.parse(storedCart) : [];
+    let cart: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
 
-    const existingItem = cart.find((item: Product) => item.id === product.id);
+    const existingItem = cart.find((item) => item.id === product.id);
 
     if (existingItem) {
       // If the product is already in the cart, increase its quantity
-      cart = cart.map((item: Product) =>
+      cart = cart.map((item) =>
         item.id === product.id ? { ...item, quantity: (item.quantity || 1) + 1 } : item
       );
     } else {
@@ -65,7 +69,13 @@ const ProductDetailsPage: React.FC = () => {
       <p className={styles.description}>{product.description}</p>
       <p className={styles.price}>Price: ${product.price}</p>
       <p className={styles.price}>Quantity</p>
-      <input type='number' onChange={(e) => changeQuantity(parseInt(e.target.value))} className={styles.quantity}></input>
+      <input 
+        type='number' 
+        value={quantity} 
+        onChange={(e) => changeQuantity(parseInt(e.target.value, 10))} 
+        className={styles.quantity}
+        min={1} // Ensure quantity cannot be less than 1
+      />
       <button className={styles.button} onClick={() => addToCart(product)}>
         Add to Cart
       </button>

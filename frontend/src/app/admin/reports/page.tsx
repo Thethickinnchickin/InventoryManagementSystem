@@ -19,6 +19,7 @@ import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { TooltipItem } from 'chart.js';
 
 ChartJS.register(
   LineElement,
@@ -43,21 +44,20 @@ const ReportsPage = () => {
   const fetchFilteredData = async () => {
     setLoading(true);
     try {
-     // Retrieve the token from cookies
-     const cookieString = document.cookie;
-     const token = cookieString
-       .split('; ')
-       .find(row => row.startsWith('authToken'))
-       ?.split('=')[1];
+      // Retrieve the token from cookies
+      const cookieString = document.cookie;
+      const token = cookieString
+        .split('; ')
+        .find(row => row.startsWith('authToken'))
+        ?.split('=')[1];
 
-
-     const response = await axios.get('http://localhost:3000/reports/order-history/report', {
-       headers: { Authorization: `Bearer ${token}` },
-       params: {
-         startDate: dayjs(startDate).format('YYYY-MM-DD'),
-         endDate: dayjs(endDate).format('YYYY-MM-DD'),
-       },
-     });
+      const response = await axios.get('http://localhost:3000/reports/order-history/report', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          startDate: dayjs(startDate).format('YYYY-MM-DD'),
+          endDate: dayjs(endDate).format('YYYY-MM-DD'),
+        },
+      });
       setOrderData(response.data);
     } catch (error) {
       console.error('Error fetching filtered order history data:', error);
@@ -105,12 +105,12 @@ const ReportsPage = () => {
   const customerSales = orderData.reduce((acc, order) => {
     acc[order.customerName] = (acc[order.customerName] || 0) + parseFloat(order.totalAmount);
     return acc;
-  }, {});
+  }, {} as Record<string, number>);
 
   const orderCountByCustomer = orderData.reduce((acc, order) => {
     acc[order.customerName] = (acc[order.customerName] || 0) + 1;
     return acc;
-  }, {});
+  }, {} as Record<string, number>);
 
   const salesByCustomerChartData = {
     labels: Object.keys(customerSales),
@@ -183,7 +183,7 @@ const ReportsPage = () => {
                 },
                 tooltip: {
                   callbacks: {
-                    label: (context) => `$${context.raw.toFixed(2)}`,
+                    label: (context: TooltipItem<'line'>) => `$${context.raw}`,
                   },
                 },
               },
@@ -197,7 +197,7 @@ const ReportsPage = () => {
                 y: {
                   beginAtZero: true,
                   ticks: {
-                    callback: (value) => `$${value.toFixed(2)}`,
+                    callback: (value) => `$${value}`,
                   },
                 },
               },
@@ -221,7 +221,7 @@ const ReportsPage = () => {
                 },
                 tooltip: {
                   callbacks: {
-                    label: (context) => `$${context.raw.toFixed(2)}`,
+                    label: (context: TooltipItem<'bar'>) => `$${context.raw}`,
                   },
                 },
               },
@@ -245,7 +245,7 @@ const ReportsPage = () => {
                 },
                 tooltip: {
                   callbacks: {
-                    label: (context) => `${context.label}: ${context.raw}`,
+                    label: (context: TooltipItem<'pie'>) => `${context.label}: ${context.raw}`,
                   },
                 },
               },

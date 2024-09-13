@@ -4,11 +4,16 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from './CategoriesPage.module.css';
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 const CategoriesPage = () => {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [categoryForm, setCategoryForm] = useState({ name: '' });
   const [editMode, setEditMode] = useState(false);
-  const [currentCategoryId, setCurrentCategoryId] = useState(null);
+  const [currentCategoryId, setCurrentCategoryId] = useState('');
 
   useEffect(() => {
     fetchCategories();
@@ -23,17 +28,17 @@ const CategoriesPage = () => {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCategoryForm({ ...categoryForm, [e.target.name]: e.target.value });
   };
 
-  const handleCategorySubmit = async (e) => {
+  const handleCategorySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const cookieString = document.cookie;
     const token = cookieString
-     .split('; ')
-     .find(row => row.startsWith('authToken'))
-     ?.split('=')[1];
+      .split('; ')
+      .find(row => row.startsWith('authToken'))
+      ?.split('=')[1];
     try {
       if (editMode) {
         await axios.put(`http://localhost:3000/categories/${currentCategoryId}`, categoryForm, {
@@ -51,19 +56,19 @@ const CategoriesPage = () => {
     }
   };
 
-  const handleEditCategory = (category) => {
+  const handleEditCategory = (category: Category) => {
     setCategoryForm(category);
     setEditMode(true);
     setCurrentCategoryId(category.id);
   };
 
-  const handleDeleteCategory = async (categoryId) => {
+  const handleDeleteCategory = async (categoryId: string) => {
     try {
       const cookieString = document.cookie;
       const token = cookieString
-       .split('; ')
-       .find(row => row.startsWith('authToken'))
-       ?.split('=')[1];
+        .split('; ')
+        .find(row => row.startsWith('authToken'))
+        ?.split('=')[1];
       await axios.delete(`http://localhost:3000/categories/${categoryId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -76,7 +81,7 @@ const CategoriesPage = () => {
   const resetForm = () => {
     setCategoryForm({ name: '' });
     setEditMode(false);
-    setCurrentCategoryId(null);
+    setCurrentCategoryId('');
   };
 
   return (

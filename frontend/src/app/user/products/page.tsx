@@ -5,20 +5,28 @@ import axios from 'axios';
 import styles from './ProductsPage.module.css';
 import { useRouter } from 'next/navigation';
 
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+}
+
 const ProductsPage: React.FC = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    axios.get('http://localhost:3000/products')
+    axios.get('https://inventory-management-system-neon.vercel.app/products')
       .then(response => {
+        console.log(response);
         const productsArray = Array.isArray(response.data.data) ? response.data.data : [];
         setProducts(productsArray);
       })
       .catch(error => console.error('Error fetching products:', error));
   }, []);
 
-  const handleNavigate = (productId: any) => {
+  const handleNavigate = (productId: number) => {
     router.push(`/user/products/${productId}`);  // Navigate to another page
   };
 
@@ -32,7 +40,7 @@ const ProductsPage: React.FC = () => {
               <h2 className={styles.productName}>{product.name}</h2>
               <p className={styles.productDescription}>{product.description}</p>
               <p className={styles.productPrice}>${product.price}</p>
-              <button className='button-24' onClick={() => handleNavigate(product.id)}>Buy</button>
+              <button className="button-24" onClick={() => handleNavigate(product.id)}>Buy</button>
             </div>
           ))
         ) : (

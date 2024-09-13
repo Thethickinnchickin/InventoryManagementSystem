@@ -4,17 +4,37 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./OrdersPage.module.css";
 
+// Define the Product and Order interfaces
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+}
+
+interface OrderItem {
+  productId: number;
+  quantity: number;
+  price: string;
+}
+
+interface OrderForm {
+  customerName: string;
+  shippingAddress: string;
+  items: OrderItem[];
+  totalAmount: number;
+}
+
 const OrdersPage = () => {
-  const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [orderForm, setOrderForm] = useState({
+  const [orders, setOrders] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orderForm, setOrderForm] = useState<OrderForm>({
     customerName: "",
     shippingAddress: "",
     items: [],
     totalAmount: 0,
   });
   const [editMode, setEditMode] = useState(false);
-  const [currentOrderId, setCurrentOrderId] = useState(null);
+  const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
 
   // Pagination states
   const [page, setPage] = useState(1);
@@ -25,19 +45,18 @@ const OrdersPage = () => {
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
 
-
+  // Fetch orders and products when the component mounts or pagination/filter changes
   useEffect(() => {
     fetchOrders();
     fetchProducts();
   }, [page, filterCustomerName, filterStartDate, filterEndDate]);
 
   const fetchOrders = async () => {
-
     const cookieString = document.cookie;
     const token = cookieString
-      .split('; ')
-      .find(row => row.startsWith('authToken'))
-      ?.split('=')[1];
+      .split("; ")
+      .find((row) => row.startsWith("authToken"))
+      ?.split("=")[1];
 
     try {
       const response = await axios.get("http://localhost:3000/orders", {
@@ -64,7 +83,7 @@ const OrdersPage = () => {
       setProducts(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error fetching products:", error);
-      setProducts([]); // Set an empty array in case of error
+      setProducts([]);
     }
   };
 
@@ -73,28 +92,31 @@ const OrdersPage = () => {
     setOrderForm({ ...orderForm, [name]: value });
   };
 
-  const handleItemChange = async (index: number, e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const handleItemChange = async (
+    index: number,
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+  ) => {
     const { name, value } = e.target;
     const updatedItems = [...orderForm.items];
 
-    if (name === 'productId') {
-      // Find the selected product
-      const selectedProduct = products.find(product => product.id === parseInt(value, 10));
+    if (name === "productId") {
+      const selectedProduct = products.find(
+        (product) => product.id === parseInt(value, 10)
+      );
       if (selectedProduct) {
-        // Update the item with selected product and its price
         updatedItems[index] = {
           ...updatedItems[index],
-          productId: parseInt(value, 10),
-          price: parseFloat(selectedProduct.price).toFixed(2),
-          quantity: updatedItems[index]?.quantity || 1, // Preserve existing quantity
+          productId: selectedProduct.id,
+          price: selectedProduct.price.toFixed(2),
+          quantity: updatedItems[index]?.quantity || 1,
         };
       }
-    } else if (name === 'quantity') {
+    } else if (name === "quantity") {
       updatedItems[index] = {
         ...updatedItems[index],
         quantity: parseInt(value, 10),
       };
-    } else if (name === 'price') {
+    } else if (name === "price") {
       updatedItems[index] = {
         ...updatedItems[index],
         price: value,
@@ -109,7 +131,7 @@ const OrdersPage = () => {
       ...orderForm,
       items: [
         ...orderForm.items,
-        { productId: "", quantity: 1, price: "0.00" },
+        { productId: 0, quantity: 1, price: "0.00" },
       ],
     });
   };
@@ -123,21 +145,28 @@ const OrdersPage = () => {
     e.preventDefault();
     const cookieString = document.cookie;
     const token = cookieString
-      .split('; ')
-      .find(row => row.startsWith('authToken'))
-      ?.split('=')[1];
+      .split("; ")
+      .find((row) => row.startsWith("authToken"))
+      ?.split("=")[1];
 
     try {
-      if (editMode) {
-        await axios.put(`http://localhost:3000/orders/${currentOrderId}`, orderForm, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      if (editMode && currentOrderId !== null) {
+        await axios.put(
+          `http://localhost:3000/orders/${currentOrderId}`,
+          orderForm,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
       } else {
         await axios.post("http://localhost:3000/orders", orderForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-      setOrderForm({ customerName: "", shippingAddress: "", items: [], totalAmount: 0 });
+      setOrderForm({
+        customerName: "",
+        shippingAddress: "",
+        items: [],
+        totalAmount: 0,
+      });
       setEditMode(false);
       setCurrentOrderId(null);
       fetchOrders();
@@ -153,9 +182,9 @@ const OrdersPage = () => {
       items: order.items.map((item: any) => ({
         productId: item.product.id,
         quantity: item.quantity,
-        price: parseFloat(item.price).toFixed(2), // Convert to decimal format
+        price: parseFloat(item.price).toFixed(2),
       })),
-      totalAmount: parseFloat(order.totalAmount).toFixed(2), // Convert to decimal format
+      totalAmount: parseFloat(order.totalAmount),
     });
     setEditMode(true);
     setCurrentOrderId(order.id);
@@ -165,9 +194,9 @@ const OrdersPage = () => {
     try {
       const cookieString = document.cookie;
       const token = cookieString
-       .split('; ')
-       .find(row => row.startsWith('authToken'))
-       ?.split('=')[1];
+        .split("; ")
+        .find((row) => row.startsWith("authToken"))
+        ?.split("=")[1];
       await axios.delete(`http://localhost:3000/orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -184,7 +213,7 @@ const OrdersPage = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Orders Management</h1>
-      
+
       <section className={styles.filterSection}>
         <h2 className={styles.subheading}>Filter Orders</h2>
         <div className={styles.filters}>
@@ -216,7 +245,9 @@ const OrdersPage = () => {
       </section>
 
       <section className={styles.formSection}>
-        <h2 className={styles.subheading}>{editMode ? "Edit Order" : "Create New Order"}</h2>
+        <h2 className={styles.subheading}>
+          {editMode ? "Edit Order" : "Create New Order"}
+        </h2>
         <form onSubmit={handleSubmit} className={styles.orderForm}>
           <input
             type="text"
@@ -287,42 +318,32 @@ const OrdersPage = () => {
           >
             Add Item
           </button>
-          <h2 className={styles.subheading}>Order Total</h2>
-          <input
-            type="number"
-            name="totalAmount"
-            value={orderForm.totalAmount}
-            onChange={handleInputChange}
-            placeholder="Total Amount"
-            min="0"
-            step="0.01"
-            className={styles.input}
-            required
-          />
           <button type="submit" className={styles.submitButton}>
             {editMode ? "Update Order" : "Create Order"}
           </button>
         </form>
       </section>
 
-      <section className={styles.orderListSection}>
+      <section className={styles.orderList}>
         <h2 className={styles.subheading}>Orders List</h2>
-        <ul className={styles.orderList}>
-          {orders.length > 0 ? (
-            orders.map((order) => (
-              <li key={order.id} className={styles.orderListItem}>
-                <span>
-                  <strong>{order.customerName}</strong> - ${parseFloat(order.totalAmount).toFixed(2)}, <strong>Order Placed:</strong> {new Date(order.createdAt).toLocaleString('en-US', {
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    hour12: true,
-                  })}
-                </span>
-
-                <div className={styles.orderActions}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer Name</th>
+              <th>Shipping Address</th>
+              <th>Total Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.id}>
+                <td>{order.id}</td>
+                <td>{order.customerName}</td>
+                <td>{order.shippingAddress}</td>
+                <td>{order.totalAmount}</td>
+                <td>
                   <button
                     onClick={() => handleEditOrder(order)}
                     className={styles.editButton}
@@ -335,13 +356,23 @@ const OrdersPage = () => {
                   >
                     Delete
                   </button>
-                </div>
-              </li>
-            ))
-          ) : (
-            <li>No orders available</li>
-          )}
-        </ul>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className={styles.pagination}>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <button
+              key={pageNum}
+              className={pageNum === page ? styles.activePage : ""}
+              onClick={() => handlePageChange(pageNum)}
+            >
+              {pageNum}
+            </button>
+          ))}
+        </div>
       </section>
     </div>
   );

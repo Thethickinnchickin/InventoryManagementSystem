@@ -4,16 +4,24 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from './OrdersPage.module.css';
 
+// Define an interface for the Order
+interface Order {
+  id: string;
+  totalAmount: number;
+  createdAt: string; // Assuming the date is in ISO string format
+}
+
 const OrdersPage: React.FC = () => {
-  const [orders, setOrders] = useState([]);
+  // Use the Order interface for the state
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-
     const cookieString = document.cookie;
     const token = cookieString
-     .split('; ')
-     .find(row => row.startsWith('authToken'))
-     ?.split('=')[1];
+      .split('; ')
+      .find(row => row.startsWith('authToken'))
+      ?.split('=')[1];
+
     axios.get('http://localhost:3000/orders/user/all', {
       headers: { Authorization: `Bearer ${token}` },
     })

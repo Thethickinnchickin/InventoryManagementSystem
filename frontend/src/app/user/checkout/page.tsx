@@ -18,6 +18,12 @@ interface BillingInfo {
   cvv: string;
 }
 
+interface CartItem {
+  id: string;
+  quantity: number;
+  price: number;
+}
+
 const CheckoutPage = () => {
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     fullName: '',
@@ -50,7 +56,7 @@ const CheckoutPage = () => {
     setError(null);
     setSuccessMessage(null);
   
-    const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cartItems: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
     
     if (cartItems.length === 0) {
       setError("Your cart is empty.");
