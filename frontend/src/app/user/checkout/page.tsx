@@ -80,7 +80,7 @@ const CheckoutPage = () => {
     };
   
     try {
-      const response = await axios.post("http://localhost:3000/orders", orderForm, {
+      const response = await axios.post("https://inventorymanagementsystem-kpq9.onrender.com/orders", orderForm, {
         headers: { Authorization: `Bearer ${token}` },
       });
   
