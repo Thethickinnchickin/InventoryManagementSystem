@@ -20,4 +20,11 @@ async function bootstrap() {
   await app.listen(3000);
 }
 
-bootstrap();
+if (process.env.VERCEL) {
+  // Running on Vercel
+  const serverless = require('serverless-http');
+  module.exports.handler = serverless(bootstrap());
+} else {
+  // Running locally or in a different environment
+  bootstrap();
+}

@@ -27,13 +27,9 @@ import { ProfileModule } from './profile/profile.module';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT, 10),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      entities: [Product, Order, OrderItem, User, Category, AuditLog],
-      synchronize: true,
+      url: 'postgresql://postgres:uqYOiTjNGfafaezPxcCROIWsvWSVzfqP@autorack.proxy.rlwy.net:23628/railway',
+      autoLoadEntities: true,
+      synchronize: false, // Use with caution in production
     }),
     ProductsModule,
     OrdersModule,

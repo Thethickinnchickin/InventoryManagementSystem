@@ -9,11 +9,7 @@ import { AuditLog } from './src/entities/audit-log.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 4545,
-  username: 'postgres',
-  password: 'matt1234',
-  database: 'postgres',
+  url: 'postgresql://postgres:uqYOiTjNGfafaezPxcCROIWsvWSVzfqP@autorack.proxy.rlwy.net:23628/railway',
   entities: [Product, Order, Category, User, OrderItem, AuditLog],
   migrations: ['src/migrations/*.ts'], // Path to your migrations folder
   synchronize: false, // Disable in production to avoid auto-syncing database schema
