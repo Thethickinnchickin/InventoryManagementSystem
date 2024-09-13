@@ -26,7 +26,7 @@ const ProductDetailsPage: React.FC = () => {
     const fetchProduct = async () => {
       if (id) {
         try {
-          const response = await axios.get(`http://localhost:3000/products/${id}`);
+          const response = await axios.get(`https://inventorymanagementsystem-kpq9.onrender.com/products/${id}`);
           setProduct(response.data);
         } catch (error) {
           console.error('Error fetching product:', error);

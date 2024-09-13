@@ -29,7 +29,7 @@ const ProfilePage = () => {
           .find(row => row.startsWith('authToken'))
           ?.split('=')[1];
 
-        const response = await axios.get('http://localhost:3000/profile', {
+        const response = await axios.get('https://inventorymanagementsystem-kpq9.onrender.com/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile({ ...profile, username: response.data.username });
@@ -66,7 +66,7 @@ const ProfilePage = () => {
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
       
-      await axios.put('http://localhost:3000/profile/username', { username: profile.username }, {
+      await axios.put('https://inventorymanagementsystem-kpq9.onrender.com/profile/username', { username: profile.username }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -93,7 +93,7 @@ const ProfilePage = () => {
       .split('; ')
       .find(row => row.startsWith('authToken'))
       ?.split('=')[1];
-      await axios.put('http://localhost:3000/profile/password', 
+      await axios.put('https://inventorymanagementsystem-kpq9.onrender.com/profile/password', 
         {
           password: profile.password,
           confirmPassword: profile.confirmPassword

@@ -22,7 +22,7 @@ const OrdersPage: React.FC = () => {
       .find(row => row.startsWith('authToken'))
       ?.split('=')[1];
 
-    axios.get('http://localhost:3000/orders/user/all', {
+    axios.get('https://inventorymanagementsystem-kpq9.onrender.com/orders/user/all', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(response => setOrders(response.data))

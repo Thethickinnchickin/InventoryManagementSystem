@@ -15,7 +15,7 @@ const LoginPage = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/auth/login', { username, password });
+      const response = await axios.post('https://inventorymanagementsystem-kpq9.onrender.com/auth/login', { username, password });
       const token  = response.data.token.access_token;
       const decodedToken = jwt.decode(token) as { role: string };
       

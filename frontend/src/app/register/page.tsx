@@ -21,7 +21,7 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      await axios.post('http://localhost:3000/users/register', { username, password });
+      await axios.post('https://inventorymanagementsystem-kpq9.onrender.com/users/register', { username, password });
       router.push('/login');
     } catch (err) {
       setError('Registration failed. Please try again.');
