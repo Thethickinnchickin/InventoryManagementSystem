@@ -1,11 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
+import serverless from 'serverless-http'; // Import serverless-http for Vercel
 
+const expressApp = express();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
 
   // Enable CORS
   app.enableCors({
@@ -14,17 +17,28 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
   });
-  
+
   app.use(cookieParser());
 
-  await app.listen(3000);
+  await app.init(); // Initialize the NestJS app without listening (for serverless)
 }
 
+// If running on Vercel, export the handler for serverless
 if (process.env.VERCEL) {
-  // Running on Vercel
-  const serverless = require('serverless-http');
-  module.exports.handler = serverless(bootstrap());
+  // Create the serverless handler
+  module.exports.handler = async (req, res) => {
+    if (!expressApp.locals.bootstrapped) {
+      await bootstrap();
+      expressApp.locals.bootstrapped = true;
+    }
+    const handler = serverless(expressApp);
+    return handler(req, res);
+  };
 } else {
-  // Running locally or in a different environment
-  bootstrap();
+  // If running locally, start listening on port 3000
+  bootstrap().then(() => {
+    expressApp.listen(3000, () => {
+      console.log('NestJS app running on http://localhost:3000');
+    });
+  });
 }
