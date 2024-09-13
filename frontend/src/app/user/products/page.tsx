@@ -17,7 +17,7 @@ const ProductsPage: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    axios.get('https://inventory-management-system-neon.vercel.app/products')
+    axios.get('https://inventory-management-system-backend-blush.vercel.app/products')
       .then(response => {
         console.log(response);
         const productsArray = Array.isArray(response.data.data) ? response.data.data : [];
