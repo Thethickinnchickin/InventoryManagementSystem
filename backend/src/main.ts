@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 import serverless from 'serverless-http'; // Import serverless-http for Vercel
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 const expressApp = express();
 
@@ -19,6 +20,16 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
+
+  const config = new DocumentBuilder()
+    .setTitle('Inventory Management API')
+    .setDescription('API documentation for the Inventory Management system')
+    .setVersion('1.0')
+    .addBearerAuth() // If you're using JWT authentication
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   await app.init(); // Initialize the NestJS app without listening (for serverless)
 }

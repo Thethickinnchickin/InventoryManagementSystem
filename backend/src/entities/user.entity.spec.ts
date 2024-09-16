@@ -67,7 +67,7 @@ describe('User Entity', () => {
       // Define the expected schema
       const expectedColumns = [
         { propertyName: 'id', isPrimary: true, isNullable: false, length: '' },
-        { propertyName: 'username', isPrimary: false, isNullable: false, length: '' },
+        { propertyName: 'username', isPrimary: false, isNullable: false, length: 255 },
         { propertyName: 'password', isPrimary: false, isNullable: false, length: '' },
         { propertyName: 'role', isPrimary: false, isNullable: false, length: '' },
       ];

@@ -8,7 +8,10 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../entities/user.entity';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('dashboard')  // Groups the endpoint under 'dashboard' in Swagger UI
+@ApiBearerAuth()       // Indicates that BearerAuth (JWT) is required
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DashboardController {
@@ -18,9 +21,11 @@ export class DashboardController {
     @InjectRepository(OrderItem) private orderItemRepository: Repository<OrderItem>,
   ) {}
 
-
   @Get('metrics')
   @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get dashboard metrics for Admin users' })
+  @ApiResponse({ status: 200, description: 'Returns metrics including total revenue, order count, top products, and low-stock items' })
+  @ApiResponse({ status: 403, description: 'Forbidden. Requires Admin role' })
   async getDashboardMetrics() {
     // Calculate total revenue
     const totalRevenueResult = await this.orderRepository
@@ -31,19 +36,19 @@ export class DashboardController {
 
     // Get the total number of orders
     const totalOrders = await this.orderRepository.count();
+
     // Find top-selling products (by total sales)
     const topProducts = await this.orderItemRepository
-    .createQueryBuilder('order_item')
-    .select('order_item.product_id', 'product_id')
-    .addSelect('product.name', 'name')
-    .addSelect('SUM(order_item.quantity * order_item.price)', 'total_sales')
-    .innerJoin(Product, 'product', 'order_item.product_id = product.id')
-    .groupBy('order_item.product_id')
-    .addGroupBy('product.name')
-    .orderBy('total_sales', 'DESC')
-    .limit(5)
-    .getRawMany();
-  
+      .createQueryBuilder('order_item')
+      .select('order_item.product_id', 'product_id')
+      .addSelect('product.name', 'name')
+      .addSelect('SUM(order_item.quantity * order_item.price)', 'total_sales')
+      .innerJoin(Product, 'product', 'order_item.product_id = product.id')
+      .groupBy('order_item.product_id')
+      .addGroupBy('product.name')
+      .orderBy('total_sales', 'DESC')
+      .limit(5)
+      .getRawMany();
 
     // Find low-stock products
     const lowStock = await this.productRepository.find({
@@ -52,7 +57,6 @@ export class DashboardController {
       },
       select: ['id', 'name', 'stock'],
     });
-    
 
     return {
       revenue: totalRevenue,

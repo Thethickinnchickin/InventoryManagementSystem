@@ -27,7 +27,7 @@ import { ProfileModule } from './profile/profile.module';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: 'postgresql://postgres:uqYOiTjNGfafaezPxcCROIWsvWSVzfqP@autorack.proxy.rlwy.net:23628/railway',
+      url: process.env.DB_URL || 'postgresql://postgres:uqYOiTjNGfafaezPxcCROIWsvWSVzfqP@autorack.proxy.rlwy.net:23628/railway',
       autoLoadEntities: true,
       synchronize: false, // Use with caution in production
     }),
