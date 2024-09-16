@@ -1,121 +1,16 @@
 Inventory Management System
-Overview
-The Inventory Management System is a full-stack application designed to manage product inventories. It includes a backend built with NestJS and a frontend developed with Next.js. This README provides information on setting up, running, and deploying the application.
+This project is an Inventory Management System designed to showcase proficiency in modern web development technologies. The system includes a backend built with NestJS and a frontend developed with Next.js.
 
-Table of Contents
-Features
-Technology Stack
-Installation
-Configuration
-Running the Application
-Testing
-Deployment
-Contributing
-License
-Features
-Product Management: View and manage a list of products.
-Order Management: Create and manage orders.
-User Management: Handle user creation and authentication.
-Responsive Design: Access the application on various devices with a responsive UI.
-Technology Stack
-Frontend:
+Technologies Used: NestJS for the backend, Next.js for the frontend, PostgreSQL for the database, and Jest with React Testing Library for testing. The project is deployed with Render for the backend and Vercel for the frontend.
 
-Next.js: React framework for server-rendered applications.
-TypeScript: Typed superset of JavaScript.
-Axios: HTTP client for making requests.
-Jest: Testing framework for React components.
-axios-mock-adapter: Mock adapter for axios.
-Backend:
+Features include product management, order management, and category management.
 
-NestJS: Framework for building efficient and scalable server-side applications.
-TypeORM: ORM for working with databases.
-PostgreSQL: Database system used for storing application data.
-Installation
-Prerequisites
-Node.js (>=14.x)
-PostgreSQL
-npm (or yarn)
-Backend Setup
-Clone the repository:
+Installation: Clone the repository and follow these steps. For the backend, navigate to the backend directory, install dependencies with npm install, set up environment variables in a .env file, run migrations with npm run migration:run, and start the server with npm run start:dev. For the frontend, navigate to the frontend directory, install dependencies with npm install, and start the development server with npm run dev.
 
-  bash
-  Copy code
-  git clone <repository-url>
-  
-cd backend
-Install dependencies:
+Testing: Run tests for both frontend and backend using npm run test.
 
-  bash
-  Copy code
-  npm install
-  
-Configure the environment variables. Create a .env file in the root of the backend directory and add the following:
+Deployment: The backend is deployed on Render and the frontend is deployed on Vercel.
 
-env
-Copy code
-DB_HOST=railway-postgres-host
-DB_PORT=5432
-DB_USERNAME=railway-username
-DB_PASSWORD='railway-password'
-DB_DATABASE=railway-database
-Run migrations:
+Usage: Access the frontend at https://<frontend-deployment-url>. The frontend interacts with the backend API to manage inventory, products, and orders.
 
-  bash
-  Copy code
-  npm run migration:run
-  
-Start the backend server:
-
-  bash
-  Copy code
-  npm run start
-  
-Frontend Setup
-Navigate to the frontend directory:
-
-  bash
-  Copy code
-  cd frontend
-  
-Install dependencies:
-
-  bash
-  Copy code
-  npm install
-  
-Start the frontend development server:
-
-  bash
-  Copy code
-  npm run dev
-  
-Configuration
-Frontend Configuration: Ensure that the frontend is configured to communicate with the backend API endpoints. Update the API base URL if necessary.
-Backend Configuration: The backend configuration can be adjusted via environment variables in the .env file.
-Running the Application
-To run the application, ensure both the frontend and backend servers are running. You can access the frontend at http://localhost:3000.
-
-Testing
-Backend Testing
-Run backend tests using:
-
-  bash
-  Copy code
-  npm run test
-  
-Frontend Testing
-Run frontend tests using:
-
-  bash
-  Copy code
-  npm run test
-  
-Deployment
-Backend Deployment
-Deploy the backend to your preferred hosting provider (e.g., Render, Railway). Ensure that environment variables are correctly configured in the production environment.
-
-Frontend Deployment
-Deploy the frontend to Vercel or another hosting provider. Make sure to configure any necessary environment variables and ensure that it connects to the correct backend API.
-
-Contributing
-Contributions are welcome! Please follow the standard GitHub workflow for issues and pull requests. Ensure your code adheres to the project's coding standards and includes relevant tests.
+As this is a showcase project, contributions are not required. The project is intended for showcase purposes only.
