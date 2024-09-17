@@ -40,7 +40,7 @@ const DashboardPage = () => {
         }
 
         // Fetch dashboard metrics
-        const response = await axios.get('https://inventorymanagementsystem-kpq9.onrender.com/dashboard/metrics', {
+        const response = await axios.get(`${process.env.API_URL}/dashboard/metrics`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });

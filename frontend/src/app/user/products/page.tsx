@@ -20,7 +20,7 @@ const ProductsPage: React.FC = () => {
 
   // Fetch the products from the API on component mount
   useEffect(() => {
-    axios.get('https://inventorymanagementsystem-kpq9.onrender.com/products')
+    axios.get(`${process.env.API_URL}/products`)
       .then(response => {
         console.log(response); // Debugging purpose to log the API response
         const productsArray = Array.isArray(response.data.data) ? response.data.data : [];
