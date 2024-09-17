@@ -44,7 +44,7 @@ export default function AuditLogPage() {
 
       try {
         // Make an API request to fetch audit logs
-        const response = await axios.get(`https://inventorymanagementsystem-kpq9.onrender.com/reports/audit-log`, {
+        const response = await axios.get(`${process.env.API_URL}/reports/audit-log`, {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
