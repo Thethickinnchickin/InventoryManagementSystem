@@ -27,7 +27,7 @@ export function middleware(req: NextRequest) {
 
   try {
     // Validate the token using a secret and decode it to get user information
-    const secret = process.env.JWT_SECRET as string; // Ensure you have the JWT_SECRET in your environment
+    const secret = process.env.NEXT_PUBLIC_JWT_SECRET as string; // Ensure you have the JWT_SECRET in your environment
     const decodedToken = jwt.verify(token, secret) as { role: string };
     const userRole = decodedToken?.role;
 
