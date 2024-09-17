@@ -20,7 +20,7 @@ const ProductsPage: React.FC = () => {
 
   // Fetch the products from the API on component mount
   useEffect(() => {
-    axios.get(`${process.env.API_URL}/products`)
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products`)
       .then(response => {
         console.log(response); // Debugging purpose to log the API response
         const productsArray = Array.isArray(response.data.data) ? response.data.data : [];
