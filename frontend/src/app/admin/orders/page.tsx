@@ -25,6 +25,7 @@ interface OrderForm {
 }
 
 const OrdersPage = () => {
+  // State to manage orders, products, and form details
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orderForm, setOrderForm] = useState<OrderForm>({
@@ -45,12 +46,15 @@ const OrdersPage = () => {
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
 
-  // Fetch orders and products when the component mounts or pagination/filter changes
+  // Fetch orders and products when component mounts or when pagination/filter changes
   useEffect(() => {
     fetchOrders();
     fetchProducts();
   }, [page, filterCustomerName, filterStartDate, filterEndDate]);
 
+  /**
+   * Fetch the list of orders from the server.
+   */
   const fetchOrders = async () => {
     const cookieString = document.cookie;
     const token = cookieString
@@ -59,7 +63,7 @@ const OrdersPage = () => {
       ?.split("=")[1];
 
     try {
-      const response = await axios.get("http://localhost:3000/orders", {
+      const response = await axios.get("https://inventorymanagementsystem-kpq9.onrender.com/orders", {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           page,
@@ -77,9 +81,12 @@ const OrdersPage = () => {
     }
   };
 
+  /**
+   * Fetch the list of products from the server.
+   */
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/products");
+      const response = await axios.get("https://inventorymanagementsystem-kpq9.onrender.com/products");
       setProducts(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -87,11 +94,20 @@ const OrdersPage = () => {
     }
   };
 
+  /**
+   * Handle changes to input fields in the order form.
+   * @param e - The change event from the input field.
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setOrderForm({ ...orderForm, [name]: value });
   };
 
+  /**
+   * Handle changes to order items (product selection, quantity, price).
+   * @param index - The index of the item being changed.
+   * @param e - The change event from the select or input field.
+   */
   const handleItemChange = async (
     index: number,
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
@@ -126,6 +142,9 @@ const OrdersPage = () => {
     setOrderForm({ ...orderForm, items: updatedItems });
   };
 
+  /**
+   * Add a new item to the order form.
+   */
   const handleAddItem = () => {
     setOrderForm({
       ...orderForm,
@@ -136,11 +155,19 @@ const OrdersPage = () => {
     });
   };
 
+  /**
+   * Remove an item from the order form.
+   * @param index - The index of the item to remove.
+   */
   const handleRemoveItem = (index: number) => {
     const updatedItems = orderForm.items.filter((_, i) => i !== index);
     setOrderForm({ ...orderForm, items: updatedItems });
   };
 
+  /**
+   * Handle form submission for creating or updating an order.
+   * @param e - The submit event from the form.
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const cookieString = document.cookie;
@@ -152,15 +179,16 @@ const OrdersPage = () => {
     try {
       if (editMode && currentOrderId !== null) {
         await axios.put(
-          `http://localhost:3000/orders/${currentOrderId}`,
+          `https://inventorymanagementsystem-kpq9.onrender.com/orders/${currentOrderId}`,
           orderForm,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-        await axios.post("http://localhost:3000/orders", orderForm, {
+        await axios.post("https://inventorymanagementsystem-kpq9.onrender.com/orders", orderForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
+      // Reset the form and fetch updated orders
       setOrderForm({
         customerName: "",
         shippingAddress: "",
@@ -175,6 +203,10 @@ const OrdersPage = () => {
     }
   };
 
+  /**
+   * Set the form for editing an order.
+   * @param order - The order to edit.
+   */
   const handleEditOrder = (order: any) => {
     setOrderForm({
       customerName: order.customerName,
@@ -190,6 +222,10 @@ const OrdersPage = () => {
     setCurrentOrderId(order.id);
   };
 
+  /**
+   * Delete an order by its ID.
+   * @param id - The ID of the order to delete.
+   */
   const handleDeleteOrder = async (id: number) => {
     try {
       const cookieString = document.cookie;
@@ -197,7 +233,7 @@ const OrdersPage = () => {
         .split("; ")
         .find((row) => row.startsWith("authToken"))
         ?.split("=")[1];
-      await axios.delete(`http://localhost:3000/orders/${id}`, {
+      await axios.delete(`https://inventorymanagementsystem-kpq9.onrender.com/orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchOrders();
@@ -206,6 +242,10 @@ const OrdersPage = () => {
     }
   };
 
+  /**
+   * Change the current page for pagination.
+   * @param newPage - The new page number.
+   */
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };

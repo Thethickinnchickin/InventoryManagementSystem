@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
@@ -12,20 +12,39 @@ export class CategoriesService {
     @InjectRepository(Category)
     private categoriesRepository: Repository<Category>,
     
-    private readonly auditService: AuditService, // Inject the AuditService
+    private readonly auditService: AuditService, // Inject the AuditService for logging actions
   ) {}
 
-  findAll(): Promise<Category[]> {
-    return this.categoriesRepository.find();
+  /**
+   * Retrieve all categories.
+   * @returns An array of category entities.
+   */
+  async findAll(): Promise<Category[]> {
+    return this.categoriesRepository.find(); // Fetch all categories
   }
 
-  findOne(id: number): Promise<Category> {
-    return this.categoriesRepository.findOneBy({ id });
+  /**
+   * Retrieve a single category by its ID.
+   * @param id - The ID of the category to retrieve.
+   * @returns The category entity.
+   * @throws NotFoundException if the category does not exist.
+   */
+  async findOne(id: number): Promise<Category> {
+    const category = await this.categoriesRepository.findOneBy({ id });
+    if (!category) {
+      throw new NotFoundException('Category not found'); // Throw a specific error if category is not found
+    }
+    return category;
   }
 
+  /**
+   * Create a new category.
+   * @param createCategoryDto - Data transfer object containing category details.
+   * @returns The created category entity.
+   */
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const category = this.categoriesRepository.create(createCategoryDto);
-    const savedCategory = await this.categoriesRepository.save(category);
+    const category = this.categoriesRepository.create(createCategoryDto); // Create category entity
+    const savedCategory = await this.categoriesRepository.save(category); // Save category entity
 
     // Log the creation action
     await this.auditService.logAction(
@@ -38,16 +57,23 @@ export class CategoriesService {
     return savedCategory;
   }
 
+  /**
+   * Update an existing category by its ID.
+   * @param id - The ID of the category to update.
+   * @param updateCategoryDto - Data transfer object containing updated category details.
+   * @returns The updated category entity.
+   * @throws NotFoundException if the category does not exist.
+   */
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
-    const category = await this.findOne(id); // First, find the category
+    const category = await this.findOne(id); // Find the category first
     if (!category) {
-      throw new Error('Category not found'); // Throw error if category doesn't exist
+      throw new NotFoundException('Category not found'); // Use NotFoundException for better error handling
     }
-  
+
     // Proceed with the update
     await this.categoriesRepository.update(id, updateCategoryDto);
-    const updatedCategory = await this.findOne(id);
-  
+    const updatedCategory = await this.findOne(id); // Fetch the updated category
+
     // Log the update action
     await this.auditService.logAction(
       'Category',
@@ -55,13 +81,20 @@ export class CategoriesService {
       'UPDATE',
       updateCategoryDto
     );
-  
+
     return updatedCategory;
   }
   
-
+  /**
+   * Remove a category by its ID.
+   * @param id - The ID of the category to remove.
+   * @throws NotFoundException if the category does not exist.
+   */
   async remove(id: number): Promise<void> {
-    await this.categoriesRepository.delete(id);
+    const result = await this.categoriesRepository.delete(id); // Delete the category
+    if (result.affected === 0) {
+      throw new NotFoundException('Category not found'); // Handle case where delete doesn't affect any rows
+    }
 
     // Log the deletion action
     await this.auditService.logAction(
@@ -72,4 +105,3 @@ export class CategoriesService {
     );
   }
 }
-

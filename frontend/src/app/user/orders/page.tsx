@@ -38,7 +38,6 @@ const OrdersPage: React.FC = () => {
             <h2 className={styles.orderCardTitle}>Order #{order.id}</h2>
             <p className={styles.orderCardText}>Total Amount: ${order.totalAmount}</p>
             <p className={styles.orderCardText}>Order Date: {new Date(order.createdAt).toLocaleDateString()}</p>
-            {/* Add more order details as needed */}
           </div>
         ))}
       </div>

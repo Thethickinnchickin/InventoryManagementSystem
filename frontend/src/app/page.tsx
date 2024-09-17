@@ -3,10 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import styles from './HomePage.module.css';
-import useAuth from './hooks/useAuth';
+import useAuth from './hooks/useAuth'; // Custom hook to check authentication status
 
 const HomePage: React.FC = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth(); // Using the custom hook to get the authentication status
 
   return (
     <div className={styles.container}>

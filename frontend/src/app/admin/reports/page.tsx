@@ -21,6 +21,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { TooltipItem } from 'chart.js';
 
+// Register necessary Chart.js components
 ChartJS.register(
   LineElement,
   BarElement,
@@ -33,34 +34,38 @@ ChartJS.register(
   ArcElement
 );
 
+// Extend dayjs with advanced formatting
 dayjs.extend(advancedFormat);
 
 const ReportsPage = () => {
   const [orderData, setOrderData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState(new Date('2019-01-01'));
   const [endDate, setEndDate] = useState(new Date());
 
+  // Fetch data based on date range and handle errors
   const fetchFilteredData = async () => {
     setLoading(true);
+    setError(null);
     try {
-      // Retrieve the token from cookies
       const cookieString = document.cookie;
       const token = cookieString
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
 
-      const response = await axios.get('http://localhost:3000/reports/order-history/report', {
+      const response = await axios.get('https://inventorymanagementsystem-kpq9.onrender.com/reports/order-history/report', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           startDate: dayjs(startDate).format('YYYY-MM-DD'),
           endDate: dayjs(endDate).format('YYYY-MM-DD'),
         },
       });
+
       setOrderData(response.data);
     } catch (error) {
-      console.error('Error fetching filtered order history data:', error);
+      setError('Error fetching data. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -70,8 +75,10 @@ const ReportsPage = () => {
     fetchFilteredData();
   }, []); // Fetch data on initial page load
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Loading data...</p>;
+  if (error) return <p>{error}</p>;
 
+  // Aggregate sales data by month
   const aggregateByMonth = (data: any[]) => {
     const aggregated = data.reduce((acc, order) => {
       const month = dayjs(order.createdAt).format('YYYY-MM');
@@ -88,6 +95,7 @@ const ReportsPage = () => {
 
   const { labels, totalSales } = aggregateByMonth(orderData);
 
+  // Data for the Total Sales Over Time chart
   const totalSalesChartData = {
     labels,
     datasets: [
@@ -102,16 +110,19 @@ const ReportsPage = () => {
     ],
   };
 
+  // Aggregate sales data by customer
   const customerSales = orderData.reduce((acc, order) => {
     acc[order.customerName] = (acc[order.customerName] || 0) + parseFloat(order.totalAmount);
     return acc;
   }, {} as Record<string, number>);
 
+  // Aggregate order count by customer
   const orderCountByCustomer = orderData.reduce((acc, order) => {
     acc[order.customerName] = (acc[order.customerName] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
+  // Data for the Sales by Customer chart
   const salesByCustomerChartData = {
     labels: Object.keys(customerSales),
     datasets: [
@@ -125,6 +136,7 @@ const ReportsPage = () => {
     ],
   };
 
+  // Data for the Order Count by Customer chart
   const orderCountChartData = {
     labels: Object.keys(orderCountByCustomer),
     datasets: [

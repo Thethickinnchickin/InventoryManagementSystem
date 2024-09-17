@@ -1,4 +1,5 @@
 // src/audit/audit.service.ts
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere, Like } from 'typeorm';
@@ -11,6 +12,14 @@ export class AuditService {
     private auditRepository: Repository<AuditLog>,
   ) {}
 
+  /**
+   * Logs an action performed on an entity.
+   * @param entityName - Name of the entity being acted upon.
+   * @param entityId - ID of the entity being acted upon.
+   * @param action - Description of the action performed.
+   * @param changes - The changes made during the action.
+   * @param performedBy - Optional. Username or identifier of who performed the action.
+   */
   async logAction(
     entityName: string,
     entityId: number,
@@ -28,6 +37,13 @@ export class AuditService {
     await this.auditRepository.save(auditLog);
   }
 
+  /**
+   * Retrieves paginated audit logs with optional filters.
+   * @param page - The page number for pagination (default: 1).
+   * @param limit - Number of records per page (default: 10).
+   * @param filters - Optional filters for entityName, action, and performedBy.
+   * @returns Paginated audit logs and metadata.
+   */
   async getAuditLogs(
     page: number = 1,
     limit: number = 10,

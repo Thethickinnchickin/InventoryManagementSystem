@@ -5,6 +5,7 @@ import axios from 'axios';
 import styles from './Products.module.css';
 
 export default function ProductsPage() {
+  // State for managing products, form fields, categories, pagination, and edit mode
   const [products, setProducts] = useState<any[]>([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -18,10 +19,11 @@ export default function ProductsPage() {
 
   const limit = 10; // Number of products per page
 
+  // Fetch products and categories when page changes
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/products?page=${page}&limit=${limit}&isPaginated=true`);
+        const response = await axios.get(`https://inventorymanagementsystem-kpq9.onrender.com/products?page=${page}&limit=${limit}&isPaginated=true`);
         setProducts(response.data.data);
         setTotalPages(response.data.lastPage);
       } catch (error) {
@@ -31,7 +33,7 @@ export default function ProductsPage() {
 
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/categories');
+        const response = await axios.get('https://inventorymanagementsystem-kpq9.onrender.com/categories');
         setCategories(response.data);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -42,12 +44,20 @@ export default function ProductsPage() {
     fetchCategories();
   }, [page]);
 
+  /**
+   * Handle page changes for pagination.
+   * @param newPage - The new page number to set.
+   */
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
 
+  /**
+   * Handle form submission for adding or updating a product.
+   * @param e - The form submission event.
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const method = editId ? 'PUT' : 'POST';
@@ -56,13 +66,13 @@ export default function ProductsPage() {
       .split('; ')
       .find(row => row.startsWith('authToken'))
       ?.split('=')[1];
-    const url = editId ? `http://localhost:3000/products/${editId}` : 'http://localhost:3000/products';
+    const url = editId ? `https://inventorymanagementsystem-kpq9.onrender.com/products/${editId}` : 'https://inventorymanagementsystem-kpq9.onrender.com/products';
 
     try {
       const response = await axios({
         method,
         url,
-        headers : {
+        headers: {
           Authorization: `Bearer ${token}`
         },
         data: {
@@ -80,6 +90,7 @@ export default function ProductsPage() {
             ? prev.map((product) => (product.id === response.data.id ? response.data : product))
             : [...prev, response.data]
         );
+        // Reset form fields
         setName('');
         setDescription('');
         setPrice('');
@@ -92,6 +103,10 @@ export default function ProductsPage() {
     }
   };
 
+  /**
+   * Handle product deletion by ID.
+   * @param id - The ID of the product to delete.
+   */
   const handleDelete = async (id: number) => {
     try {
       const cookieString = document.cookie;
@@ -99,8 +114,8 @@ export default function ProductsPage() {
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
-      const response = await axios.delete(`http://localhost:3000/products/${id}`, {
-        headers: {Authorization: `Bearer ${token}`}
+      const response = await axios.delete(`https://inventorymanagementsystem-kpq9.onrender.com/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.status === 200) {
@@ -111,11 +126,14 @@ export default function ProductsPage() {
     }
   };
 
+  /**
+   * Handle changes to category selection.
+   * @param e - The change event from the checkbox input.
+   */
   const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     const categoryId = Number(value);
     const selectedCategory = categories.find((category) => category.id === categoryId);
-    
 
     setSelectedCategories((prev) => {
       if (checked) {
@@ -129,6 +147,10 @@ export default function ProductsPage() {
     });
   };
 
+  /**
+   * Handle editing a product by ID.
+   * @param id - The ID of the product to edit.
+   */
   const handleEdit = async (id: number) => {
     try {
       const cookieString = document.cookie;
@@ -136,8 +158,8 @@ export default function ProductsPage() {
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
-      const response = await axios.get(`http://localhost:3000/products/${id}`, {
-        headers: {Authorization: `Bearer ${token}`}
+      const response = await axios.get(`https://inventorymanagementsystem-kpq9.onrender.com/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = response.data;
       setName(data.name);

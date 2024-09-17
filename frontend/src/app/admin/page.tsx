@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from './DashboardPage.module.css';
 import useAuth from '../hooks/useAuth';
-import { useRouter } from 'next/router';
 
 interface DashboardMetrics {
   revenue: number | string;
@@ -20,38 +19,33 @@ const DashboardPage = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
-  let { isLoggedIn, logout } = useAuth();
-  //const router = useRouter();
-
-
+  const { isLoggedIn, logout } = useAuth();
 
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
+        // Retrieve the token from cookies
         const cookieString = document.cookie;
         const token = cookieString
           .split('; ')
           .find(row => row.startsWith('authToken'))
           ?.split('=')[1];
 
-        if (token) {
-          try {
-            const response = await axios.get('http://localhost:3000/dashboard/metrics', {
-              headers: { Authorization: `Bearer ${token}` },
-              withCredentials: true,
-            });
-            
-            setMetrics(response.data);
-          } catch (error) {
-            console.error('Failed to fetch protected data', error);
-          }
-        } else {
+        // Redirect to login if no token is present
+        if (!token) {
           if (typeof window !== 'undefined') {
-            window.location.href = '/login'
+            window.location.href = '/login';
           }
-          return null;
+          return;
         }
 
+        // Fetch dashboard metrics
+        const response = await axios.get('https://inventorymanagementsystem-kpq9.onrender.com/dashboard/metrics', {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
+
+        setMetrics(response.data);
       } catch (error) {
         console.error('Error fetching dashboard metrics:', error);
       } finally {
@@ -60,7 +54,7 @@ const DashboardPage = () => {
     };
 
     fetchMetrics();
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on component mount
 
   if (loading) return <p>Loading...</p>;
 
@@ -68,8 +62,8 @@ const DashboardPage = () => {
     <div className={styles.dashboardContainer}>
       {isLoggedIn ? (
         <div>
-          <h1 className={styles.title} >Dashboard Overview</h1>
-          <button onClick={logout}>Logout</button>
+          <h1 className={styles.title}>Dashboard Overview</h1>
+          <button onClick={logout} className={styles.logoutButton}>Logout</button>
           <div className={styles.metricsGrid}>
             <div className={styles.card}>
               <h3>Total Revenue</h3>
@@ -82,30 +76,36 @@ const DashboardPage = () => {
             <div className={styles.card}>
               <h3>Top-Selling Products</h3>
               <ul>
-                {metrics?.topProducts?.map((product) => (
-                  <li key={product.product_id}>
-                    {product.name}: ${parseFloat(String(product.total_sales)).toLocaleString()}
-                  </li>
-                )) || <li>No products available</li>}
+                {metrics?.topProducts?.length ? (
+                  metrics.topProducts.map(product => (
+                    <li key={product.product_id}>
+                      {product.name}: ${parseFloat(String(product.total_sales)).toLocaleString()}
+                    </li>
+                  ))
+                ) : (
+                  <li>No products available</li>
+                )}
               </ul>
             </div>
             <div className={styles.card}>
               <h3>Low Stock Alerts</h3>
               <ul>
-                {metrics?.lowStock?.map((product) => (
-                  <li key={product.id}>
-                    {product.name}: {product.stock} left
-                  </li>
-                )) || <li>No low stock alerts</li>}
+                {metrics?.lowStock?.length ? (
+                  metrics.lowStock.map(product => (
+                    <li key={product.id}>
+                      {product.name}: {product.stock} left
+                    </li>
+                  ))
+                ) : (
+                  <li>No low stock alerts</li>
+                )}
               </ul>
             </div>
           </div>
         </div>
-
       ) : (
-        <h1>Log In</h1>
+        <h1>Please log in to view this page</h1>
       )}
-
     </div>
   );
 };

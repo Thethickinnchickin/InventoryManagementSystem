@@ -1,12 +1,7 @@
+// Retrieve the authentication token from localStorage
 const getToken = () => {
-    const token = localStorage.getItem('authToken');
-    if(token) {
-        return token
-    } else {
-        return null;
-    }
-}
-
-
-
-export default getToken;
+    return localStorage.getItem('authToken') || null;
+  };
+  
+  export default getToken;
+  

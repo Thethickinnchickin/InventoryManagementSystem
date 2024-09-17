@@ -5,76 +5,96 @@ import axios from 'axios';
 import styles from './AuditLogPage.module.css';
 
 export default function AuditLogPage() {
+  // State to hold the fetched logs
   const [logs, setLogs] = useState([]);
+  // State to manage the current page of logs being viewed
   const [page, setPage] = useState(1);
+  // State to manage the total number of pages available
   const [totalPages, setTotalPages] = useState(1);
+  // State to manage the filters applied to the logs
   const [filters, setFilters] = useState({
     entityName: '',
     action: '',
     performedBy: '',
   });
+  // State to manage which logs are expanded
   const [expandedLogs, setExpandedLogs] = useState<Set<number>>(new Set());
 
-  const limit = 10; // Logs per page
+  const limit = 10; // Number of logs to display per page
 
+  /**
+   * Fetch audit logs from the server with the current filters and pagination settings.
+   */
   const fetchAuditLogs = async () => {
     try {
+      // Retrieve authentication token from cookies
       const cookieString = document.cookie;
       const token = cookieString
-       .split('; ')
-       .find(row => row.startsWith('authToken'))
-       ?.split('=')[1];
-      // Redirect to login page if not logged in
- 
+        .split('; ')
+        .find(row => row.startsWith('authToken'))
+        ?.split('=')[1];
 
-      if (token) {
-        try {
-          const response = await axios.get(`http://localhost:3000/reports/audit-log`, {
-            headers: { Authorization: `Bearer ${token}` },
-            params: {
-              page,
-              limit,
-              ...filters,
-            },
-          });
-          const data = response.data;
-          const pages = typeof data.lastPage === 'number' ? data.lastPage : 1;
-          setLogs(data.data);
-          setTotalPages(pages);
-        } catch (error) {
-          console.error('Failed to fetch protected data', error);
-        }
-      } else {
+      // Redirect to login page if token is not found
+      if (!token) {
         if (typeof window !== 'undefined') {
-          window.location.href = '/login'
+          window.location.href = '/login';
         }
-        return null;
+        return;
       }
 
-
+      try {
+        // Make an API request to fetch audit logs
+        const response = await axios.get(`https://inventorymanagementsystem-kpq9.onrender.com/reports/audit-log`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            page,
+            limit,
+            ...filters,
+          },
+        });
+        const data = response.data;
+        const pages = typeof data.lastPage === 'number' ? data.lastPage : 1;
+        setLogs(data.data);
+        setTotalPages(pages);
+      } catch (error) {
+        console.error('Failed to fetch protected data', error);
+      }
     } catch (error) {
       console.error('Error fetching audit logs:', error);
     }
   };
 
+  // Fetch logs whenever page or filters change
   useEffect(() => {
     fetchAuditLogs();
   }, [page, filters]);
 
+  /**
+   * Handle page change for pagination controls.
+   * @param newPage - The new page number to set.
+   */
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
 
+  /**
+   * Handle changes to filter inputs.
+   * @param e - The change event from the input field.
+   */
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters({
       ...filters,
       [e.target.name]: e.target.value,
     });
-    setPage(1);
+    setPage(1); // Reset to the first page when filters change
   };
 
+  /**
+   * Toggle the expansion of a specific log entry.
+   * @param id - The ID of the log entry to toggle.
+   */
   const toggleExpand = (id: number) => {
     setExpandedLogs(prev => {
       const newExpandedLogs = new Set(prev);
