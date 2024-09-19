@@ -47,6 +47,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const saltRounds = 10; // Number of salt rounds for bcrypt
     const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+    createUserDto.role = UserRole.ADMIN;
 
     const newUser = this.usersRepository.create({
       ...createUserDto,

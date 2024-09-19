@@ -17,6 +17,7 @@ const useAuth = () => {
     if (token) {
       // Decode the token to extract user role
       const decodedToken = jwt.decode(token) as { role: string };
+      console.log(decodedToken)
       
       // Set the user role and logged-in state
       setUserRole(decodedToken.role);

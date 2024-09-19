@@ -27,6 +27,7 @@ export class RolesGuard implements CanActivate {
    */
   canActivate(context: ExecutionContext): boolean {
     // Retrieve the roles metadata set on the route handler
+    
     const requiredRoles = this.reflector.get<UserRole[]>('roles', context.getHandler());
     
     // If no roles are specified for the route, allow access

@@ -1,22 +1,30 @@
+'use client';
+
 import React from 'react';
-import styles from './OrderConfirmationPage.module.css';
+import { Container, Typography, Box } from '@mui/material';
 
 const OrderConfirmationPage: React.FC = () => (
-  <div className={styles.container}>
-    {/* Page heading */}
-    <h1 className={styles.heading}>Order Confirmation</h1>
+  <Container maxWidth="sm" sx={{ textAlign: 'center', py: 4 }}>
+    {/* Heading for the order confirmation page */}
+    <Typography variant="h4" gutterBottom>
+      Order Confirmation
+    </Typography>
 
     {/* Thank you message */}
-    <p className={styles.text}>Thank you for your order!</p>
+    <Typography variant="body1" gutterBottom>
+      Thank you for your order!
+    </Typography>
 
-    {/* Display order number (static for now) */}
-    <p className={styles.text}>
+    {/* Order number message */}
+    <Typography variant="body1" gutterBottom>
       Your order number is: <strong>#12345</strong>
-    </p>
+    </Typography>
 
     {/* Email confirmation message */}
-    <p className={styles.text}>We will send you an email confirmation shortly.</p>
-  </div>
+    <Typography variant="body1">
+      We will send you an email confirmation shortly.
+    </Typography>
+  </Container>
 );
 
 export default OrderConfirmationPage;

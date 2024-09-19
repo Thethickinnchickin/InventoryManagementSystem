@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 import { parse } from 'cookie';
 
 // List of routes that require authentication
 const protectedRoutes = ['/admin', '/user', '/user/cart', '/user/checkout'];
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   // Extract the pathname from the request URL
   const { pathname } = req.nextUrl;
   
@@ -25,25 +25,26 @@ export function middleware(req: NextRequest) {
     return NextResponse.next(); // Allow access to non-protected routes
   }
 
-  // try {
-  //   // Validate the token using a secret and decode it to get user information
-  //   const secret = process.env.NEXT_PUBLIC_JWT_SECRET || 'your_secret_key' as string; // Ensure you have the JWT_SECRET in your environment
-  //   const decodedToken = jwt.verify(token, secret) as { role: string };
-  //   const userRole = decodedToken?.role;
+  try {
+    // Validate the token using a secret and decode it to get user information
+    const secret = 'your_secret_key'; // Ensure you have the JWT_SECRET in your environment
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
 
-  //   // Role-based access control
-  //   // Redirect to unauthorized page if the user does not have the required role
-  //   if ((pathname.startsWith('/admin/reports') || pathname.startsWith('/audit-logs') 
-  //     || pathname.startsWith('/admin')) && userRole !== 'admin') {
-  //     return NextResponse.redirect(new URL('/unauthorized', req.url));
-  //   } else if (pathname.startsWith('/user') && userRole !== 'user') {
-  //     return NextResponse.redirect(new URL('/unauthorized', req.url));
-  //   }
-  // } catch (error) {
-  //   // If token validation fails, redirect to the login page
-  //   console.error('Error decoding token:', error);
-  //   return NextResponse.redirect(new URL('/login', req.url));
-  // }
+    const userRole = payload?.role;
+
+    // Role-based access control
+    // Redirect to unauthorized page if the user does not have the required role
+    if ((pathname.startsWith('/admin/reports') || pathname.startsWith('/audit-logs') 
+      || pathname.startsWith('/admin')) && userRole !== 'admin') {
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    } else if (pathname.startsWith('/user') && userRole !== 'user') {
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    }
+  } catch (error) {
+    // If token validation fails, redirect to the login page
+    console.error('Error decoding token:', error);
+    //return NextResponse.redirect(new URL('/login', req.url));
+  }
 
   // Allow the request to proceed if all checks pass
   return NextResponse.next();

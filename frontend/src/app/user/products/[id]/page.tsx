@@ -3,7 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-import styles from './ProductDetailsPage.module.css';
+import {
+  Container,
+  Typography,
+  Button,
+  TextField,
+  Card,
+  CardContent,
+  Alert
+} from '@mui/material';
 
 // Define the Product interface to structure the product data
 interface Product {
@@ -23,20 +31,22 @@ const ProductDetailsPage: React.FC = () => {
   const router = useRouter();  // Use router to navigate between pages
   const [product, setProduct] = useState<Product | null>(null);  // State to hold the fetched product data
   const [quantity, setQuantity] = useState(1);  // State to manage the selected product quantity
+  const [error, setError] = useState<string | null>(null);  // State to manage error messages
 
   // Fetch the product details when the component mounts or when the product ID changes
   useEffect(() => {
     const fetchProduct = async () => {
       if (id) {  // Ensure that the product ID exists before making the request
         try {
-          const response = await axios.get(`https://inventorymanagementsystem-kpq9.onrender.com/products/${id}`);
+          const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products/${id}`);
           setProduct(response.data);  // Set the product data to state
         } catch (error) {
           console.error('Error fetching product:', error);  // Handle any errors during the fetch
+          setError('Error fetching product details. Please try again later.');
         }
       }
     };
-    
+
     fetchProduct();  // Trigger the API call
   }, [id]);  // Re-run the effect when the product ID changes
 
@@ -62,38 +72,54 @@ const ProductDetailsPage: React.FC = () => {
   };
 
   // Function to update the quantity state
-  const changeQuantity = (newQuantity: number) => {
-    setQuantity(newQuantity);
-  }
+  const changeQuantity = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setQuantity(parseInt(event.target.value, 10));
+  };
 
   // If the product data hasn't been loaded yet, show a loading message
-  if (!product) return <div>Loading...</div>;
+  if (!product) return <Container maxWidth="sm"><Typography variant="h6" align="center">Loading...</Typography></Container>;
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>{product.name}</h1>  {/* Product name */}
-      <p className={styles.description}>{product.description}</p>  {/* Product description */}
-      <p className={styles.price}>Price: ${product.price}</p>  {/* Product price */}
-      
-      <p className={styles.price}>Quantity</p>
-      <input 
-        type='number' 
-        value={quantity} 
-        onChange={(e) => changeQuantity(parseInt(e.target.value, 10))} 
-        className={styles.quantity}
-        min={1}  // Ensure that the quantity is at least 1
-      />
-      
-      {/* Button to add the product to the cart */}
-      <button className={styles.button} onClick={() => addToCart(product)}>
-        Add to Cart
-      </button>
+    <Container maxWidth="sm" sx={{ paddingY: 4 }}>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {/* Button to go back to the previous page */}
-      <button className={styles.button} onClick={() => router.back()}>
-        Back to Products
-      </button>
-    </div>
+      <Card sx={{ padding: 3, boxShadow: 3 }}>
+        <CardContent>
+          <Typography variant="h4" component="h1" gutterBottom>
+            {product.name}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            {product.description}
+          </Typography>
+          <Typography variant="h6" color="primary" gutterBottom>
+            ${product.price}
+          </Typography>
+          <TextField
+            label="Quantity"
+            type="number"
+            value={quantity}
+            onChange={changeQuantity}
+            InputProps={{ inputProps: { min: 1 } }}
+            fullWidth
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => addToCart(product)}
+            sx={{ mr: 2 }}
+          >
+            Add to Cart
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => router.back()}
+          >
+            Back to Products
+          </Button>
+        </CardContent>
+      </Card>
+    </Container>
   );
 };
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import styles from './ProfilePage.module.css';
+import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
 
 // Define the interface for the user profile form data
 interface UserProfile {
@@ -32,7 +32,7 @@ const ProfilePage = () => {
           ?.split('=')[1];
 
         // Make the request to fetch profile data
-        const response = await axios.get('https://inventorymanagementsystem-kpq9.onrender.com/profile', {
+        const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile({ ...profile, username: response.data.username });  // Set the username in the form
@@ -73,7 +73,7 @@ const ProfilePage = () => {
         ?.split('=')[1];
 
       // Make the request to update the username
-      await axios.put('https://inventorymanagementsystem-kpq9.onrender.com/profile/username', { username: profile.username }, {
+      await axios.put(`${process.env.API_URL || 'http://localhost:3000'}/profile/username`, { username: profile.username }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -106,7 +106,7 @@ const ProfilePage = () => {
         ?.split('=')[1];
 
       // Make the request to update the password
-      await axios.put('https://inventorymanagementsystem-kpq9.onrender.com/profile/password', 
+      await axios.put(`${process.env.API_URL || 'http://localhost:3000'}/profile/password`, 
         {
           password: profile.password,
           confirmPassword: profile.confirmPassword
@@ -122,64 +122,60 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Profile</h1>
-      {error && <p className={styles.error}>{error}</p>}
-      {successMessage && <p className={styles.success}>{successMessage}</p>}
+    <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Profile
+      </Typography>
+
+      {/* Display error message */}
+      {error && <Alert severity="error">{error}</Alert>}
+      
+      {/* Display success message */}
+      {successMessage && <Alert severity="success">{successMessage}</Alert>}
 
       {/* Username change form */}
-      <form className={styles.profileForm} onSubmit={handleUsernameChange}>
-        <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="username">
-            Username
-          </label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={profile.username}
-            onChange={handleChange}
-            className={styles.input}
-          />
-        </div>
-        <button type="submit" className={styles.button}>
+      <Box component="form" onSubmit={handleUsernameChange} sx={{ mb: 4 }}>
+        <TextField
+          fullWidth
+          label="Username"
+          name="username"
+          value={profile.username}
+          onChange={handleChange}
+          margin="normal"
+          variant="outlined"
+        />
+        <Button type="submit" variant="contained" color="primary">
           Change Username
-        </button>
-      </form>
+        </Button>
+      </Box>
 
       {/* Password change form */}
-      <form className={styles.profileForm} onSubmit={handlePasswordChange}>
-        <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="password">
-            New Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={profile.password}
-            onChange={handleChange}
-            className={styles.input}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="confirmPassword">
-            Confirm New Password
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={profile.confirmPassword}
-            onChange={handleChange}
-            className={styles.input}
-          />
-        </div>
-        <button type="submit" className={styles.button}>
+      <Box component="form" onSubmit={handlePasswordChange}>
+        <TextField
+          fullWidth
+          label="New Password"
+          type="password"
+          name="password"
+          value={profile.password}
+          onChange={handleChange}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          fullWidth
+          label="Confirm New Password"
+          type="password"
+          name="confirmPassword"
+          value={profile.confirmPassword}
+          onChange={handleChange}
+          margin="normal"
+          variant="outlined"
+        />
+        <Button type="submit" variant="contained" color="primary">
           Change Password
-        </button>
-      </form>
-    </div>
+        </Button>
+      </Box>
+    </Container>
   );
 };
 

@@ -20,6 +20,7 @@ import advancedFormat from 'dayjs/plugin/advancedFormat';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { TooltipItem } from 'chart.js';
+import { Box, TextField, Button } from '@mui/material';
 
 // Register necessary Chart.js components
 ChartJS.register(
@@ -55,7 +56,7 @@ const ReportsPage = () => {
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
 
-      const response = await axios.get('https://inventorymanagementsystem-kpq9.onrender.com/reports/order-history/report', {
+      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/reports/order-history/report`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           startDate: dayjs(startDate).format('YYYY-MM-DD'),
@@ -158,26 +159,36 @@ const ReportsPage = () => {
   return (
     <div className="page-container">
       <h1>Order Reports</h1>
-      <div>
-        <DatePicker
-          selected={startDate}
-          onChange={(date) => setStartDate(date!)}
-          selectsStart
-          startDate={startDate}
-          endDate={endDate}
-          dateFormat="yyyy-MM-dd"
-        />
-        <DatePicker
-          selected={endDate}
-          onChange={(date) => setEndDate(date!)}
-          selectsEnd
-          startDate={startDate}
-          endDate={endDate}
-          minDate={startDate}
-          dateFormat="yyyy-MM-dd"
-        />
-        <button onClick={fetchFilteredData}>Apply Filters</button>
-      </div>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Box>
+          <DatePicker
+            selected={startDate}
+            onChange={(date) => setStartDate(date!)}
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            dateFormat="yyyy-MM-dd"
+            customInput={<TextField label="Start Date" variant="outlined" fullWidth />}
+          />
+        </Box>
+        <Box>
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => setEndDate(date!)}
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate}
+            dateFormat="yyyy-MM-dd"
+            customInput={<TextField label="End Date" variant="outlined" fullWidth />}
+          />
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+          <Button variant="contained" color="primary" onClick={fetchFilteredData}>
+            Apply Filters
+          </Button>
+        </Box>
+      </Box>
       <div className="chart-container">
         <div>
           <h2 className="chart-title">Total Sales Over Time</h2>

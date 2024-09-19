@@ -4,6 +4,40 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from './DashboardPage.module.css';
 import useAuth from '../hooks/useAuth';
+import { styled } from '@mui/material/styles';
+import { Box, Paper, Typography, Button, List, ListItem, ListItemText } from '@mui/material';
+
+// Define styled components
+const DashboardContainer = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(4),
+  fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+  backgroundColor: theme.palette.background.paper,
+}));
+
+const Card = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[2],
+  textAlign: 'center',
+  transition: 'box-shadow 0.3s ease',
+  '&:hover': {
+    boxShadow: theme.shadows[4],
+  },
+}));
+
+const MetricsGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+  gap: theme.spacing(2),
+}));
+
+const Title = styled(Typography)(({ theme }) => ({
+  fontSize: '2rem',
+  fontWeight: 600,
+  marginBottom: theme.spacing(2),
+  color: theme.palette.text.primary,
+  textAlign: 'center',
+}));
 
 interface DashboardMetrics {
   revenue: number | string;
@@ -18,20 +52,17 @@ interface DashboardMetrics {
 const DashboardPage = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-
   const { isLoggedIn, logout } = useAuth();
 
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        // Retrieve the token from cookies
         const cookieString = document.cookie;
         const token = cookieString
           .split('; ')
           .find(row => row.startsWith('authToken'))
           ?.split('=')[1];
 
-        // Redirect to login if no token is present
         if (!token) {
           if (typeof window !== 'undefined') {
             window.location.href = '/login';
@@ -39,10 +70,8 @@ const DashboardPage = () => {
           return;
         }
 
-        // Fetch dashboard metrics
-        const response = await axios.get(`${process.env.API_URL}/dashboard/metrics`, {
+        const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/dashboard/metrics`, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
         });
 
         setMetrics(response.data);
@@ -54,59 +83,69 @@ const DashboardPage = () => {
     };
 
     fetchMetrics();
-  }, []); // Empty dependency array ensures this runs once on component mount
+  }, []);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Typography>Loading...</Typography>;
 
   return (
-    <div className={styles.dashboardContainer}>
+    <DashboardContainer>
       {isLoggedIn ? (
         <div>
-          <h1 className={styles.title}>Dashboard Overview</h1>
-          <button onClick={logout} className={styles.logoutButton}>Logout</button>
-          <div className={styles.metricsGrid}>
-            <div className={styles.card}>
-              <h3>Total Revenue</h3>
-              <p>${parseFloat(String(metrics?.revenue || 0)).toLocaleString()}</p>
-            </div>
-            <div className={styles.card}>
-              <h3>Total Orders</h3>
-              <p>{metrics?.orders}</p>
-            </div>
-            <div className={styles.card}>
-              <h3>Top-Selling Products</h3>
-              <ul>
+          <Title>Dashboard Overview</Title>
+          <Button variant="contained" color="primary" onClick={logout} sx={{ mb: 2 }}>
+            Logout
+          </Button>
+          <MetricsGrid>
+            <Card>
+              <Typography variant="h6">Total Revenue</Typography>
+              <Typography variant="h4" color="primary">
+                ${parseFloat(String(metrics?.revenue || 0)).toLocaleString()}
+              </Typography>
+            </Card>
+            <Card>
+              <Typography variant="h6">Total Orders</Typography>
+              <Typography variant="h4">{metrics?.orders}</Typography>
+            </Card>
+            <Card>
+              <Typography variant="h6">Top-Selling Products</Typography>
+              <List>
                 {metrics?.topProducts?.length ? (
                   metrics.topProducts.map(product => (
-                    <li key={product.product_id}>
-                      {product.name}: ${parseFloat(String(product.total_sales)).toLocaleString()}
-                    </li>
+                    <ListItem key={product.product_id}>
+                      <ListItemText
+                        primary={product.name}
+                        secondary={`$${parseFloat(String(product.total_sales)).toLocaleString()}`}
+                      />
+                    </ListItem>
                   ))
                 ) : (
-                  <li>No products available</li>
+                  <ListItem>No products available</ListItem>
                 )}
-              </ul>
-            </div>
-            <div className={styles.card}>
-              <h3>Low Stock Alerts</h3>
-              <ul>
+              </List>
+            </Card>
+            <Card>
+              <Typography variant="h6">Low Stock Alerts</Typography>
+              <List>
                 {metrics?.lowStock?.length ? (
                   metrics.lowStock.map(product => (
-                    <li key={product.id}>
-                      {product.name}: {product.stock} left
-                    </li>
+                    <ListItem key={product.id}>
+                      <ListItemText
+                        primary={product.name}
+                        secondary={`${product.stock} left`}
+                      />
+                    </ListItem>
                   ))
                 ) : (
-                  <li>No low stock alerts</li>
+                  <ListItem>No low stock alerts</ListItem>
                 )}
-              </ul>
-            </div>
-          </div>
+              </List>
+            </Card>
+          </MetricsGrid>
         </div>
       ) : (
-        <h1>Please log in to view this page</h1>
+        <Title>Please log in to view this page</Title>
       )}
-    </div>
+    </DashboardContainer>
   );
 };
 

@@ -2,7 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from './CategoriesPage.module.css';
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Box
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 // Define the Category type
 interface Category {
@@ -11,47 +24,30 @@ interface Category {
 }
 
 const CategoriesPage = () => {
-  // State to hold the list of categories
   const [categories, setCategories] = useState<Category[]>([]);
-  // State to manage the category form inputs
   const [categoryForm, setCategoryForm] = useState({ name: '' });
-  // State to toggle between create and edit modes
   const [editMode, setEditMode] = useState(false);
-  // State to track the ID of the currently edited category
   const [currentCategoryId, setCurrentCategoryId] = useState('');
 
-  // Fetch categories when the component mounts
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  /**
-   * Fetch the list of categories from the server.
-   */
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/categories');
+      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/categories`);
       setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
   };
 
-  /**
-   * Handle changes to the category form inputs.
-   * @param e - The change event from the input field.
-   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCategoryForm({ ...categoryForm, [e.target.name]: e.target.value });
   };
 
-  /**
-   * Handle form submission for creating or updating a category.
-   * @param e - The submit event from the form.
-   */
   const handleCategorySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Retrieve authentication token from cookies
     const cookieString = document.cookie;
     const token = cookieString
       .split('; ')
@@ -60,17 +56,14 @@ const CategoriesPage = () => {
 
     try {
       if (editMode) {
-        // Update existing category
-        await axios.put(`https://inventorymanagementsystem-kpq9.onrender.com/categories/${currentCategoryId}`, categoryForm, {
+        await axios.put(`${process.env.API_URL || 'http://localhost:3000'}/categories/${currentCategoryId}`, categoryForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        // Create new category
-        await axios.post('https://inventorymanagementsystem-kpq9.onrender.com/categories', categoryForm, {
+        await axios.post(`${process.env.API_URL || 'http://localhost:3000'}/categories`, categoryForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-      // Refresh the list of categories and reset the form
       fetchCategories();
       resetForm();
     } catch (error) {
@@ -78,20 +71,12 @@ const CategoriesPage = () => {
     }
   };
 
-  /**
-   * Set the form for editing a category.
-   * @param category - The category to edit.
-   */
   const handleEditCategory = (category: Category) => {
     setCategoryForm(category);
     setEditMode(true);
     setCurrentCategoryId(category.id);
   };
 
-  /**
-   * Delete a category by its ID.
-   * @param categoryId - The ID of the category to delete.
-   */
   const handleDeleteCategory = async (categoryId: string) => {
     try {
       const cookieString = document.cookie;
@@ -99,18 +84,15 @@ const CategoriesPage = () => {
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
-      await axios.delete(`https://inventorymanagementsystem-kpq9.onrender.com/categories/${categoryId}`, {
+      await axios.delete(`${process.env.API_URL || 'http://localhost:3000'}/categories/${categoryId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchCategories(); // Refresh the list of categories
+      fetchCategories();
     } catch (error) {
       console.error('Error deleting category:', error);
     }
   };
 
-  /**
-   * Reset the category form and exit edit mode.
-   */
   const resetForm = () => {
     setCategoryForm({ name: '' });
     setEditMode(false);
@@ -118,44 +100,61 @@ const CategoriesPage = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Category Management</h1>
-      <form className={styles.form} onSubmit={handleCategorySubmit}>
-        <input
-          type="text"
+    <Container>
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        sx={{ color: 'black' }} // Ensure the title text is black
+      >
+        Category Management
+      </Typography>
+      <form onSubmit={handleCategorySubmit}>
+        <TextField
+          label="Category Name"
+          variant="outlined"
           name="name"
-          placeholder="Category Name"
           value={categoryForm.name}
           onChange={handleInputChange}
-          className={styles.input}
+          fullWidth
+          margin="normal"
+          sx={{ color: 'black' }} // Ensure input text is black
         />
-        <div className={styles.formActions}>
-          <button type="submit" className={styles.submitButton}>
+        <Box display="flex" justifyContent="space-between" mt={2}>
+          <Button type="submit" variant="contained" color="primary">
             {editMode ? 'Update Category' : 'Create Category'}
-          </button>
-          <button type="button" className={styles.cancelButton} onClick={resetForm}>
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={resetForm}>
             Cancel
-          </button>
-        </div>
+          </Button>
+        </Box>
       </form>
 
-      <h2 className={styles.subTitle}>Existing Categories</h2>
-      <ul className={styles.categoryList}>
+      <Typography
+        variant="h5"
+        component="h2"
+        gutterBottom
+        mt={4}
+        sx={{ color: 'black' }} // Ensure subtitle text is black
+      >
+        Existing Categories
+      </Typography>
+      <List>
         {categories.map((category) => (
-          <li key={category.id} className={styles.categoryItem}>
-            <span>{category.name}</span>
-            <div className={styles.actionButtons}>
-              <button onClick={() => handleEditCategory(category)} className={styles.editButton}>
-                Edit
-              </button>
-              <button onClick={() => handleDeleteCategory(category.id)} className={styles.deleteButton}>
-                Delete
-              </button>
-            </div>
-          </li>
+          <ListItem key={category.id}>
+            <ListItemText primary={category.name} sx={{ color: 'black' }} />
+            <ListItemSecondaryAction>
+              <IconButton edge="end" aria-label="edit" onClick={() => handleEditCategory(category)}>
+                <EditIcon />
+              </IconButton>
+              <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteCategory(category.id)}>
+                <DeleteIcon />
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Container>
   );
 };
 

@@ -1,11 +1,19 @@
-// src/app/login/page.tsx
 'use client';
 
 import { useState } from 'react';
 import axios from 'axios';
-import styles from './LoginPage.module.css';
 import Cookie from 'js-cookie';
 import jwt from 'jsonwebtoken';
+import { 
+  Container, 
+  Card, 
+  CardContent, 
+  Typography, 
+  TextField, 
+  Button, 
+  Alert, 
+  Box 
+} from '@mui/material';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -15,14 +23,13 @@ const LoginPage = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('https://inventorymanagementsystem-kpq9.onrender.com/auth/login', { username, password });
-      const token  = response.data.token.access_token;
+      const response = await axios.post(`${process.env.API_URL || 'http://localhost:3000'}/auth/login`, { username, password });
+      const token = response.data.token.access_token;
       const decodedToken = jwt.decode(token) as { role: string };
 
       Cookie.set('authToken', token); 
-      // Redirect or show success message
       if(decodedToken.role === "admin") {
-        window.location.href = "/admin"
+        window.location.href = "/admin";
       } else {
         window.location.href = '/'; // Example redirect
       }
@@ -31,36 +38,65 @@ const LoginPage = () => {
       setError('Invalid username or password');
     }
   };
-return(
-    <div className={styles.container}>
-      <div className={styles.loginCard}>
-        <h2 className={styles.title}>Login</h2>
-        {error && <p className={styles.error}>{error}</p>}
-        <form onSubmit={handleLogin}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
+
+  return (
+    <Container 
+      component="main" 
+      maxWidth="xs"
+      sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh', 
+        padding: 2 
+      }}
+    >
+      <Card sx={{ width: '100%', padding: 3 }}>
+        <CardContent>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Login
+          </Typography>
+          {error && <Alert severity="error">{error}</Alert>}
+          <Box component="form" onSubmit={handleLogin} noValidate>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
               id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
+              sx={{ mb: 2 }}
             />
-          </div>
-          <div className={styles.inputGroup}>
-            <label htmlFor="password">Password</label>
-            <input
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
               type="password"
               id="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              sx={{ mb: 2 }}
             />
-          </div>
-          <button type="submit" className={styles.submitButton}>Login</button>
-        </form>
-      </div>
-    </div>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+            >
+              Login
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </Container>
   );
 };
 

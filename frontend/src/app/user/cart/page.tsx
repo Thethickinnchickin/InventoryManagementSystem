@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import styles from './CartPage.module.css';
 import { useRouter } from 'next/navigation';
+import { Box, Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper } from '@mui/material';
 
 interface CartItem {
   id: number;
@@ -60,60 +60,78 @@ const CartPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Your Cart</h1>
+    <Container maxWidth="md">
+      <Typography variant="h4" gutterBottom align="center">
+        Your Cart
+      </Typography>
 
-      {/* Display a message if the cart is empty */}
       {cartItems.length === 0 ? (
-        <p>Your cart is empty.</p>
+        <Box sx={{ textAlign: 'center', mt: 4 }}>
+          <Typography variant="h6" color="textSecondary">
+            Your cart is empty.
+          </Typography>
+          <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={() => router.push('/')}>
+            Go to Shop
+          </Button>
+        </Box>
       ) : (
-        <div>
-          <table className={styles.cartTable}>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Total</th>
-                <th>Remove</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Render each item in the cart */}
-              {cartItems.map(item => (
-                <tr key={item.id}>
-                  <td>{item.name}</td>
-                  <td>
-                    <input
-                      type="number"
-                      value={item.quantity}
-                      min="1"
-                      onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))} // Handle quantity change
-                      className={styles.quantityInput}
-                    />
-                  </td>
-                  <td>${Number(item.price).toFixed(2)}</td> {/* Display item price */}
-                  <td>${(item.price * item.quantity).toFixed(2)}</td> {/* Display total price for this item */}
-                  <td>
-                    <button onClick={() => removeItem(item.id)} className={styles.removeButton}>
-                      Remove
-                    </button> {/* Button to remove item from cart */}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          {/* Display the total price and a checkout button */}
-          <div className={styles.cartSummary}>
-            <p>Total Price: ${totalPrice.toFixed(2)}</p>
-            <button onClick={handleCheckout} className={styles.checkoutButton}>
+        <Box>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Product</TableCell>
+                  <TableCell>Quantity</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>Remove</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {cartItems.map(item => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.name}</TableCell>
+                    <TableCell>
+                      <TextField
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+                        inputProps={{ min: 1 }}
+                      />
+                    </TableCell>
+                    <TableCell>${item.price}</TableCell>
+                    <TableCell>${item.price * item.quantity}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => removeItem(item.id)}
+                      >
+                        Remove
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <Box mt={2} textAlign="right">
+            <Typography variant="h6">
+              Total Price: ${totalPrice}
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCheckout}
+              sx={{ mt: 2 }}
+            >
               Proceed to Checkout
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Container>
   );
 };
 

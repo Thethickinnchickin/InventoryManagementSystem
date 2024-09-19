@@ -2,10 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import {
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  Typography,
+  IconButton,
+  MenuItem,
+  Select,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import styles from './Products.module.css';
 
 export default function ProductsPage() {
-  // State for managing products, form fields, categories, pagination, and edit mode
   const [products, setProducts] = useState<any[]>([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -19,11 +30,10 @@ export default function ProductsPage() {
 
   const limit = 10; // Number of products per page
 
-  // Fetch products and categories when page changes
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`https://inventorymanagementsystem-kpq9.onrender.com/products?page=${page}&limit=${limit}&isPaginated=true`);
+        const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products?page=${page}&limit=${limit}&isPaginated=true`);
         setProducts(response.data.data);
         setTotalPages(response.data.lastPage);
       } catch (error) {
@@ -33,7 +43,7 @@ export default function ProductsPage() {
 
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('https://inventorymanagementsystem-kpq9.onrender.com/categories');
+        const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/categories`);
         setCategories(response.data);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -44,20 +54,12 @@ export default function ProductsPage() {
     fetchCategories();
   }, [page]);
 
-  /**
-   * Handle page changes for pagination.
-   * @param newPage - The new page number to set.
-   */
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
 
-  /**
-   * Handle form submission for adding or updating a product.
-   * @param e - The form submission event.
-   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const method = editId ? 'PUT' : 'POST';
@@ -66,7 +68,7 @@ export default function ProductsPage() {
       .split('; ')
       .find(row => row.startsWith('authToken'))
       ?.split('=')[1];
-    const url = editId ? `https://inventorymanagementsystem-kpq9.onrender.com/products/${editId}` : 'https://inventorymanagementsystem-kpq9.onrender.com/products';
+    const url = editId ? `${process.env.API_URL || 'http://localhost:3000'}/products/${editId}` : `${process.env.API_URL || 'http://localhost:3000'}/products`;
 
     try {
       const response = await axios({
@@ -90,7 +92,6 @@ export default function ProductsPage() {
             ? prev.map((product) => (product.id === response.data.id ? response.data : product))
             : [...prev, response.data]
         );
-        // Reset form fields
         setName('');
         setDescription('');
         setPrice('');
@@ -103,10 +104,6 @@ export default function ProductsPage() {
     }
   };
 
-  /**
-   * Handle product deletion by ID.
-   * @param id - The ID of the product to delete.
-   */
   const handleDelete = async (id: number) => {
     try {
       const cookieString = document.cookie;
@@ -114,7 +111,7 @@ export default function ProductsPage() {
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
-      const response = await axios.delete(`https://inventorymanagementsystem-kpq9.onrender.com/products/${id}`, {
+      const response = await axios.delete(`${process.env.API_URL || 'http://localhost:3000'}/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -126,10 +123,6 @@ export default function ProductsPage() {
     }
   };
 
-  /**
-   * Handle changes to category selection.
-   * @param e - The change event from the checkbox input.
-   */
   const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     const categoryId = Number(value);
@@ -147,10 +140,6 @@ export default function ProductsPage() {
     });
   };
 
-  /**
-   * Handle editing a product by ID.
-   * @param id - The ID of the product to edit.
-   */
   const handleEdit = async (id: number) => {
     try {
       const cookieString = document.cookie;
@@ -158,7 +147,7 @@ export default function ProductsPage() {
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
-      const response = await axios.get(`https://inventorymanagementsystem-kpq9.onrender.com/products/${id}`, {
+      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = response.data;
@@ -175,30 +164,34 @@ export default function ProductsPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Product Management</h1>
+      <Typography variant="h4">Product Management</Typography>
       <form onSubmit={handleSubmit} className={styles.form}>
-        <input
+        <TextField
+          fullWidth
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Product Name"
           className={styles.input}
         />
-        <input
+        <TextField
+          fullWidth
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Product Description"
           className={styles.input}
         />
-        <input
+        <TextField
+          fullWidth
           type="number"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           placeholder="Product Price"
           className={styles.input}
         />
-        <input
+        <TextField
+          fullWidth
           type="number"
           value={stock}
           onChange={(e) => setStock(e.target.value)}
@@ -207,21 +200,22 @@ export default function ProductsPage() {
         />
         <div className={styles.checkboxGroup}>
           {categories.map((category) => (
-            <label key={category.id} className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                value={category.id}
-                checked={selectedCategories.some((selected) => selected.id === category.id)}
-                onChange={handleCategoryChange}
-                className={styles.checkbox}
-              />
-              {category.name}
-            </label>
+            <FormControlLabel
+              key={category.id}
+              control={
+                <Checkbox
+                  value={category.id}
+                  checked={selectedCategories.some((selected) => selected.id === category.id)}
+                  onChange={handleCategoryChange}
+                />
+              }
+              label={category.name}
+            />
           ))}
         </div>
-        <button type="submit" className={styles.button}>
+        <Button type="submit" variant="contained" color="primary" className={styles.button}>
           {editId ? 'Update Product' : 'Add Product'}
-        </button>
+        </Button>
       </form>
       <ul className={styles.productList}>
         {products.map((product) => (
@@ -229,35 +223,38 @@ export default function ProductsPage() {
             <span>
               {product.name} - ${product.price}
             </span>
-            <button
+            <IconButton
               onClick={() => handleEdit(product.id)}
               className={styles.editButton}
             >
               Edit
-            </button>
-            <button
+            </IconButton>
+            <IconButton
               onClick={() => handleDelete(product.id)}
+              color="error"
               className={styles.deleteButton}
             >
-              Delete
-            </button>
+              <DeleteIcon />
+            </IconButton>
           </li>
         ))}
       </ul>
       <div className={styles.pagination}>
-        <button
+        <Button
           disabled={page === 1}
           onClick={() => handlePageChange(page - 1)}
         >
           Previous
-        </button>
-        <span>{page} of {totalPages}</span>
-        <button
+        </Button>
+        <Typography variant="body1">
+          {page} of {totalPages}
+        </Typography>
+        <Button
           disabled={page === totalPages}
           onClick={() => handlePageChange(page + 1)}
         >
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -2,73 +2,112 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import styles from './Navbar.module.css';
+import { AppBar, Toolbar, IconButton, Button, Menu, MenuItem, Box, Typography, useMediaQuery, useTheme } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import useAuth from '../hooks/useAuth';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { isLoggedIn, userRole, logout } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Toggle the mobile menu open/closed
   const toggleMenu = () => {
-    setIsOpen(prevState => !prevState);
+    setIsOpen((prevState) => !prevState);
   };
 
-  // Close the menu
   const closeMenu = () => {
     setIsOpen(false);
   };
 
   return (
-    <nav className={styles.navbar}>
-      <div className={styles.navContainer}>
-        {/* Logo link with dynamic route based on user role */}
-        <Link href={userRole === 'admin' ? '/admin' : '/'} className={styles.navLogo} onClick={closeMenu}>
-          Inventory Management
-        </Link>
+    <AppBar position="sticky" color="primary">
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* Logo */}
+        <Typography variant="h6" component={Link} href={userRole === 'admin' ? '/admin' : '/'} color="inherit" sx={{ textDecoration: 'none' }}>
+          Inventory Management 
+        </Typography>
 
-        {/* Menu icon for mobile view */}
-        <div className={styles.menuIcon} onClick={toggleMenu}>
-          <span className={isOpen ? styles.barActive : styles.bar}></span>
-          <span className={isOpen ? styles.barActive : styles.bar}></span>
-          <span className={isOpen ? styles.barActive : styles.bar}></span>
-        </div>
-
-        {/* Navigation menu */}
-        <div className={`${styles.navMenu} ${isOpen ? styles.active : ''}`}>
-          {isLoggedIn ? (
-            // Render links for logged-in users
-            <>
-              {userRole === 'admin' ? (
+        {/* Desktop Navigation */}
+        {!isMobile && (
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {isLoggedIn ? (
+              userRole === 'admin' ? (
                 <>
-                  <Link href="/admin" className={styles.navItem} onClick={closeMenu}>Dashboard</Link>
-                  <Link href="/admin/orders" className={styles.navItem} onClick={closeMenu}>Orders</Link>
-                  <Link href="/admin/products" className={styles.navItem} onClick={closeMenu}>Products</Link>
-                  <Link href="/admin/categories" className={styles.navItem} onClick={closeMenu}>Categories</Link>
-                  <Link href="/admin/reports" className={styles.navItem} onClick={closeMenu}>Reports</Link>
-                  <Link href="/admin/audit-logs" className={styles.navItem} onClick={closeMenu}>Audit Logs</Link>
+                  <Button component={Link} href="/admin" color="inherit">Dashboard</Button>
+                  <Button component={Link} href="/admin/orders" color="inherit">Orders</Button>
+                  <Button component={Link} href="/admin/products" color="inherit">Products</Button>
+                  <Button component={Link} href="/admin/categories" color="inherit">Categories</Button>
+                  <Button component={Link} href="/admin/reports" color="inherit">Reports</Button>
+                  <Button component={Link} href="/admin/audit-logs" color="inherit">Audit Logs</Button>
                 </>
               ) : (
                 <>
-                  <Link href="/user/orders" className={styles.navItem} onClick={closeMenu}>Your Orders</Link>
-                  <Link href="/user/products" className={styles.navItem} onClick={closeMenu}>Products</Link>
-                  <Link href="/user/cart" className={styles.navItem} onClick={closeMenu}>Cart</Link>
-                  <Link href="/user/profile" className={styles.navItem} onClick={closeMenu}>Profile</Link>
+                  <Button component={Link} href="/user/orders" color="inherit">Your Orders</Button>
+                  <Button component={Link} href="/user/products" color="inherit">Products</Button>
+                  <Button component={Link} href="/user/cart" color="inherit">Cart</Button>
+                  <Button component={Link} href="/user/profile" color="inherit">Profile</Button>
+                  <Button onClick={() => { logout(); closeMenu(); }} color="secondary" variant="contained">Logout</Button>
+                </>
+              )
+            ) : (
+              <>
+                <Button component={Link} href="/login" color="inherit">Login</Button>
+                <Button component={Link} href="/register" color="inherit">Register</Button>
+              </>
+            )}
+          </Box>
+        )}
+
+        {/* Mobile Menu Icon */}
+        {isMobile && (
+          <IconButton edge="start" color="inherit" onClick={toggleMenu}>
+            <MenuIcon />
+          </IconButton>
+        )}
+
+        {/* Mobile Navigation Menu */}
+        <Menu
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          keepMounted
+          open={isOpen}
+          onClose={closeMenu}
+        >
+          {isLoggedIn ? (
+            <>
+              {userRole === 'admin' ? (
+                <>
+                  <MenuItem onClick={closeMenu} component={Link} href="/admin">Dashboard</MenuItem>
+                  <MenuItem onClick={closeMenu} component={Link} href="/admin/orders">Orders</MenuItem>
+                  <MenuItem onClick={closeMenu} component={Link} href="/admin/products">Products</MenuItem>
+                  <MenuItem onClick={closeMenu} component={Link} href="/admin/categories">Categories</MenuItem>
+                  <MenuItem onClick={closeMenu} component={Link} href="/admin/reports">Reports</MenuItem>
+                  <MenuItem onClick={closeMenu} component={Link} href="/admin/audit-logs">Audit Logs</MenuItem>
+                </>
+              ) : (
+                <>
+                  <MenuItem onClick={closeMenu} component={Link} href="/user/orders">Your Orders</MenuItem>
+                  <MenuItem onClick={closeMenu} component={Link} href="/user/products">Products</MenuItem>
+                  <MenuItem onClick={closeMenu} component={Link} href="/user/cart">Cart</MenuItem>
+                  <MenuItem onClick={closeMenu} component={Link} href="/user/profile">Profile</MenuItem>
                 </>
               )}
-              {/* Logout button */}
-              <button onClick={logout} className={styles.navItem}>Logout</button>
+              <MenuItem onClick={() => { logout(); closeMenu(); }}>
+                <Button color="secondary" variant="contained">Logout</Button>
+              </MenuItem>
             </>
           ) : (
-            // Render links for unauthenticated users
             <>
-              <Link href="/login" className={styles.navItem} onClick={closeMenu}>Login</Link>
-              <Link href="/register" className={styles.navItem} onClick={closeMenu}>Register</Link>
+              <MenuItem onClick={closeMenu} component={Link} href="/login">Login</MenuItem>
+              <MenuItem onClick={closeMenu} component={Link} href="/register">Register</MenuItem>
             </>
           )}
-        </div>
-      </div>
-    </nav>
+        </Menu>
+      </Toolbar>
+    </AppBar>
   );
 };
 

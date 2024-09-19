@@ -1,8 +1,10 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import styles from './AuditLogPage.module.css';
+import { Container, Typography, TextField, Table, TableBody, TableCell, TableHead, TableRow, Button, Box, Pagination, IconButton, Collapse } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 export default function AuditLogPage() {
   // State to hold the fetched logs
@@ -27,14 +29,12 @@ export default function AuditLogPage() {
    */
   const fetchAuditLogs = async () => {
     try {
-      // Retrieve authentication token from cookies
       const cookieString = document.cookie;
       const token = cookieString
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
 
-      // Redirect to login page if token is not found
       if (!token) {
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
@@ -42,59 +42,41 @@ export default function AuditLogPage() {
         return;
       }
 
-      try {
-        // Make an API request to fetch audit logs
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_URL}/reports/audit-log`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: {
-            page,
-            limit,
-            ...filters,
-          },
-        });
-        const data = response.data;
-        const pages = typeof data.lastPage === 'number' ? data.lastPage : 1;
-        setLogs(data.data);
-        setTotalPages(pages);
-      } catch (error) {
-        console.error('Failed to fetch protected data', error);
-      }
+      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/reports/audit-log`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          page,
+          limit,
+          ...filters,
+        },
+      });
+
+      const data = response.data;
+      const pages = typeof data.lastPage === 'number' ? data.lastPage : 1;
+      setLogs(data.data);
+      setTotalPages(pages);
     } catch (error) {
       console.error('Error fetching audit logs:', error);
     }
   };
 
-  // Fetch logs whenever page or filters change
   useEffect(() => {
     fetchAuditLogs();
   }, [page, filters]);
 
-  /**
-   * Handle page change for pagination controls.
-   * @param newPage - The new page number to set.
-   */
-  const handlePageChange = (newPage: number) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setPage(newPage);
-    }
+  const handlePageChange = (event: React.ChangeEvent<unknown>, newPage: number) => {
+    setPage(newPage);
   };
 
-  /**
-   * Handle changes to filter inputs.
-   * @param e - The change event from the input field.
-   */
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFilters({
       ...filters,
       [e.target.name]: e.target.value,
     });
     setPage(1); // Reset to the first page when filters change
   };
+  
 
-  /**
-   * Toggle the expansion of a specific log entry.
-   * @param id - The ID of the log entry to toggle.
-   */
   const toggleExpand = (id: number) => {
     setExpandedLogs(prev => {
       const newExpandedLogs = new Set(prev);
@@ -108,91 +90,87 @@ export default function AuditLogPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <h1>Audit Logs</h1>
-      <div className={styles.filters}>
-        <input
-          type="text"
+    <Container>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Audit Logs
+      </Typography>
+
+      {/* Filters */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <TextField
+          label="Filter by Entity Name"
           name="entityName"
           value={filters.entityName}
           onChange={handleFilterChange}
-          placeholder="Filter by Entity Name"
-          className={styles.filterInput}
+          variant="outlined"
+          fullWidth
         />
-        <input
-          type="text"
+        <TextField
+          label="Filter by Action"
           name="action"
           value={filters.action}
           onChange={handleFilterChange}
-          placeholder="Filter by Action"
-          className={styles.filterInput}
+          variant="outlined"
+          fullWidth
         />
-        <input
-          type="text"
+        <TextField
+          label="Filter by Performed By"
           name="performedBy"
           value={filters.performedBy}
           onChange={handleFilterChange}
-          placeholder="Filter by Performed By"
-          className={styles.filterInput}
+          variant="outlined"
+          fullWidth
         />
-      </div>
+      </Box>
+
       {logs.length > 0 ? (
         <>
-          <table className={styles.table}>
-            <thead className={styles.thead}>
-              <tr>
-                <th>Entity Name</th>
-                <th>Entity ID</th>
-                <th>Action</th>
-                <th>Changes</th>
-                <th>Performed By</th>
-                <th>Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
+          {/* Audit Logs Table */}
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Entity Name</TableCell>
+                <TableCell>Entity ID</TableCell>
+                <TableCell>Action</TableCell>
+                <TableCell>Changes</TableCell>
+                <TableCell>Performed By</TableCell>
+                <TableCell>Timestamp</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {logs.map((log: any) => (
-                <tr key={log.id}>
-                  <td>{log.entityName}</td>
-                  <td>{log.entityId}</td>
-                  <td>{log.action}</td>
-                  <td>
-                    <button
-                      className={styles.toggleButton}
-                      onClick={() => toggleExpand(log.id)}
-                    >
-                      {expandedLogs.has(log.id) ? 'Collapse' : 'Expand'}
-                    </button>
-                    {expandedLogs.has(log.id) && (
-                      <pre className={styles.changesContent}>
-                        {typeof log.changes === 'object' ? JSON.stringify(log.changes, null, 2) : log.changes}
-                      </pre>
-                    )}
-                  </td>
-                  <td>{log.performedBy}</td>
-                  <td>{new Date(log.timestamp).toLocaleString()}</td>
-                </tr>
+                <TableRow key={log.id}>
+                  <TableCell>{log.entityName}</TableCell>
+                  <TableCell>{log.entityId}</TableCell>
+                  <TableCell>{log.action}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => toggleExpand(log.id)}>
+                      {expandedLogs.has(log.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    </IconButton>
+                    <Collapse in={expandedLogs.has(log.id)} timeout="auto" unmountOnExit>
+                      <pre>{typeof log.changes === 'object' ? JSON.stringify(log.changes, null, 2) : log.changes}</pre>
+                    </Collapse>
+                  </TableCell>
+                  <TableCell>{log.performedBy}</TableCell>
+                  <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-          <div className={styles.pagination}>
-            <button
-              disabled={page === 1}
-              onClick={() => handlePageChange(page - 1)}
-            >
-              Previous
-            </button>
-            <span>{page} of {totalPages}</span>
-            <button
-              disabled={page === totalPages}
-              onClick={() => handlePageChange(page + 1)}
-            >
-              Next
-            </button>
-          </div>
+            </TableBody>
+          </Table>
+
+          {/* Pagination */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+            />
+          </Box>
         </>
       ) : (
-        <p>No logs available.</p>
+        <Typography>No logs available.</Typography>
       )}
-    </div>
+    </Container>
   );
 }

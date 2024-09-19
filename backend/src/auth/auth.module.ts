@@ -26,7 +26,7 @@ import { AuthController } from './auth.controller';
      * @param signOptions - Configuration options for signing tokens, such as expiration time.
      */
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'defaultSecret', // Use a strong secret in production
+      secret: process.env.JWT_SECRET || 'your_secret_key', // Use a strong secret in production
       signOptions: { expiresIn: '6h' }, // Tokens expire in 6 hours
     }),
 

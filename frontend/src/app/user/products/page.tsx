@@ -2,60 +2,87 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import styles from './ProductsPage.module.css';
 import { useRouter } from 'next/navigation';
+import {
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Alert
+} from '@mui/material';
 
-// Define the Product interface to structure product data
 interface Product {
-  id: number; // Product ID
-  name: string; // Name of the product
-  description: string; // Product description
-  price: number; // Product price
+  id: number;
+  name: string;
+  description: string;
+  price: number;
 }
 
 const ProductsPage: React.FC = () => {
-  // State to store the fetched list of products
   const [products, setProducts] = useState<Product[]>([]);
-  const router = useRouter(); // Use router to navigate between pages
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  // Fetch the products from the API on component mount
   useEffect(() => {
-    axios.get(`${process.env.API_URL}/products`)
+    axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products`)
       .then(response => {
-        console.log(response); // Debugging purpose to log the API response
         const productsArray = Array.isArray(response.data.data) ? response.data.data : [];
-        setProducts(productsArray); // Update the state with the products array
+        setProducts(productsArray);
       })
-      .catch(error => console.error('Error fetching products:', error)); // Log any errors during the fetch
-  }, []); // Empty dependency array ensures this runs only once on component mount
+      .catch(error => {
+        console.error('Error fetching products:', error);
+        setError('Error fetching products. Please try again later.');
+      });
+  }, []);
 
-  // Function to navigate to the product detail page when clicking "Buy"
   const handleNavigate = (productId: number) => {
-    router.push(`/user/products/${productId}`);  // Navigate to the specific product's detail page
+    router.push(`/user/products/${productId}`);
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Our Products</h1>
+    <Container maxWidth="lg" sx={{ paddingY: 4 }}>
+      <Typography variant="h4" component="h1" align="center" gutterBottom>
+        Our Products
+      </Typography>
 
-      {/* Display a grid of product cards if products exist, otherwise show a no-products message */}
-      <div className={styles.productsGrid}>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      <Grid container spacing={4}>
         {products.length > 0 ? (
           products.map(product => (
-            <div key={product.id} className={styles.productCard}>
-              <h2 className={styles.productName}>{product.name}</h2>
-              <p className={styles.productDescription}>{product.description}</p>
-              <p className={styles.productPrice}>${product.price}</p>
-
-              {/* Button to navigate to the product detail page */}
-              <button className="button-24" onClick={() => handleNavigate(product.id)}>Buy</button>
-            </div>
+            <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: 3 }}>
+                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <Typography variant="h6" component="h2" gutterBottom>
+                    {product.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    {product.description}
+                  </Typography>
+                  <Typography variant="h6" color="primary" gutterBottom>
+                    ${product.price}
+                  </Typography>
+                </CardContent>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ margin: 2 }}
+                  onClick={() => handleNavigate(product.id)}
+                >
+                  Buy
+                </Button>
+              </Card>
+            </Grid>
           ))
         ) : (
-          <p className={styles.noProductsMessage}>No products available</p> // Message if no products are available
+          <Typography variant="body1" color="text.secondary" align="center">
+            No products available
+          </Typography>
         )}
-      </div>
-    </div>
+      </Grid>
+    </Container>
   );
 };
 

@@ -1,10 +1,28 @@
 "use client";
+import styles from "./OrdersPage.module.css";
+
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import styles from "./OrdersPage.module.css";
+import { 
+  Container, 
+  Typography, 
+  TextField, 
+  Button, 
+  Select, 
+  MenuItem, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper, 
+  IconButton, 
+  Grid
+} from "@mui/material";
+import { Delete, Edit } from "@mui/icons-material";
 
-// Define the Product and Order interfaces
 interface Product {
   id: number;
   name: string;
@@ -25,7 +43,6 @@ interface OrderForm {
 }
 
 const OrdersPage = () => {
-  // State to manage orders, products, and form details
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orderForm, setOrderForm] = useState<OrderForm>({
@@ -37,24 +54,18 @@ const OrdersPage = () => {
   const [editMode, setEditMode] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
 
-  // Pagination states
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Filter states
   const [filterCustomerName, setFilterCustomerName] = useState("");
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
 
-  // Fetch orders and products when component mounts or when pagination/filter changes
   useEffect(() => {
     fetchOrders();
     fetchProducts();
   }, [page, filterCustomerName, filterStartDate, filterEndDate]);
 
-  /**
-   * Fetch the list of orders from the server.
-   */
   const fetchOrders = async () => {
     const cookieString = document.cookie;
     const token = cookieString
@@ -63,7 +74,7 @@ const OrdersPage = () => {
       ?.split("=")[1];
 
     try {
-      const response = await axios.get("https://inventorymanagementsystem-kpq9.onrender.com/orders", {
+      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           page,
@@ -81,12 +92,9 @@ const OrdersPage = () => {
     }
   };
 
-  /**
-   * Fetch the list of products from the server.
-   */
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("https://inventorymanagementsystem-kpq9.onrender.com/products");
+      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products`);
       setProducts(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -94,20 +102,11 @@ const OrdersPage = () => {
     }
   };
 
-  /**
-   * Handle changes to input fields in the order form.
-   * @param e - The change event from the input field.
-   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setOrderForm({ ...orderForm, [name]: value });
   };
 
-  /**
-   * Handle changes to order items (product selection, quantity, price).
-   * @param index - The index of the item being changed.
-   * @param e - The change event from the select or input field.
-   */
   const handleItemChange = async (
     index: number,
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
@@ -142,9 +141,6 @@ const OrdersPage = () => {
     setOrderForm({ ...orderForm, items: updatedItems });
   };
 
-  /**
-   * Add a new item to the order form.
-   */
   const handleAddItem = () => {
     setOrderForm({
       ...orderForm,
@@ -155,19 +151,11 @@ const OrdersPage = () => {
     });
   };
 
-  /**
-   * Remove an item from the order form.
-   * @param index - The index of the item to remove.
-   */
   const handleRemoveItem = (index: number) => {
     const updatedItems = orderForm.items.filter((_, i) => i !== index);
     setOrderForm({ ...orderForm, items: updatedItems });
   };
 
-  /**
-   * Handle form submission for creating or updating an order.
-   * @param e - The submit event from the form.
-   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const cookieString = document.cookie;
@@ -179,16 +167,15 @@ const OrdersPage = () => {
     try {
       if (editMode && currentOrderId !== null) {
         await axios.put(
-          `https://inventorymanagementsystem-kpq9.onrender.com/orders/${currentOrderId}`,
+          `${process.env.API_URL || 'http://localhost:3000'}/orders/${currentOrderId}`,
           orderForm,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-        await axios.post("https://inventorymanagementsystem-kpq9.onrender.com/orders", orderForm, {
+        await axios.post(`${process.env.API_URL || 'http://localhost:3000'}/orders`, orderForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-      // Reset the form and fetch updated orders
       setOrderForm({
         customerName: "",
         shippingAddress: "",
@@ -203,10 +190,6 @@ const OrdersPage = () => {
     }
   };
 
-  /**
-   * Set the form for editing an order.
-   * @param order - The order to edit.
-   */
   const handleEditOrder = (order: any) => {
     setOrderForm({
       customerName: order.customerName,
@@ -214,7 +197,7 @@ const OrdersPage = () => {
       items: order.items.map((item: any) => ({
         productId: item.product.id,
         quantity: item.quantity,
-        price: parseFloat(item.price).toFixed(2),
+        price: parseFloat(item.price),
       })),
       totalAmount: parseFloat(order.totalAmount),
     });
@@ -222,10 +205,6 @@ const OrdersPage = () => {
     setCurrentOrderId(order.id);
   };
 
-  /**
-   * Delete an order by its ID.
-   * @param id - The ID of the order to delete.
-   */
   const handleDeleteOrder = async (id: number) => {
     try {
       const cookieString = document.cookie;
@@ -233,7 +212,7 @@ const OrdersPage = () => {
         .split("; ")
         .find((row) => row.startsWith("authToken"))
         ?.split("=")[1];
-      await axios.delete(`https://inventorymanagementsystem-kpq9.onrender.com/orders/${id}`, {
+      await axios.delete(`${process.env.API_URL || 'http://localhost:3000'}/orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchOrders();
@@ -242,17 +221,13 @@ const OrdersPage = () => {
     }
   };
 
-  /**
-   * Change the current page for pagination.
-   * @param newPage - The new page number.
-   */
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Orders Management</h1>
+    <Container maxWidth="lg">
+      <Typography variant="h4" gutterBottom>Orders Management</Typography>
 
       <section className={styles.filterSection}>
         <h2 className={styles.subheading}>Filter Orders</h2>
@@ -363,58 +338,69 @@ const OrdersPage = () => {
           </button>
         </form>
       </section>
-
-      <section className={styles.orderList}>
-        <h2 className={styles.subheading}>Orders List</h2>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Customer Name</th>
-              <th>Shipping Address</th>
-              <th>Total Amount</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id}>
-                <td>{order.id}</td>
-                <td>{order.customerName}</td>
-                <td>{order.shippingAddress}</td>
-                <td>{order.totalAmount}</td>
-                <td>
-                  <button
-                    onClick={() => handleEditOrder(order)}
-                    className={styles.editButton}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteOrder(order.id)}
-                    className={styles.deleteButton}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className={styles.pagination}>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-            <button
-              key={pageNum}
-              className={pageNum === page ? styles.activePage : ""}
-              onClick={() => handlePageChange(pageNum)}
+      <section>
+        <Typography variant="h6" gutterBottom>
+          Orders List
+        </Typography>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Order ID</TableCell>
+                <TableCell>Customer Name</TableCell>
+                <TableCell>Shipping Address</TableCell>
+                <TableCell>Total Amount</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.map((order: any) => (
+                <TableRow key={order.id}>
+                  <TableCell>{order.id}</TableCell>
+                  <TableCell>{order.customerName}</TableCell>
+                  <TableCell>{order.shippingAddress}</TableCell>
+                  <TableCell>${order.totalAmount}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleEditOrder(order)}
+                    >
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => handleDeleteOrder(order.id)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Grid container spacing={2} justifyContent="center" style={{ marginTop: 16 }}>
+          <Grid item>
+            <Button
+              variant="outlined"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1}
             >
-              {pageNum}
-            </button>
-          ))}
-        </div>
+              Previous
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              variant="outlined"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= totalPages}
+            >
+              Next
+            </Button>
+          </Grid>
+        </Grid>
       </section>
-    </div>
+    </Container>
   );
 };
 

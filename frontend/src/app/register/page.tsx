@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation'; // Hook to navigate programmatically
-import styles from './RegisterPage.module.css';
+import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
 
 const RegisterPage: React.FC = () => {
   // State variables to handle form inputs and error messages
@@ -25,7 +25,7 @@ const RegisterPage: React.FC = () => {
 
     try {
       // Send POST request to register a new user
-      await axios.post('https://inventorymanagementsystem-kpq9.onrender.com/users/register', { username, password });
+      await axios.post(`${process.env.API_URL || 'http://localhost:3000'}/users/register`, { username, password });
       
       // Redirect user to login page on successful registration
       router.push('/login');
@@ -36,59 +36,53 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <Container maxWidth="xs">
       {/* Page header */}
-      <h1 className={styles.header}>Register</h1>
+      <Typography variant="h4" component="h1" gutterBottom align="center">
+        Register
+      </Typography>
       
       {/* Registration form */}
-      <form className={styles.form} onSubmit={handleRegister}>
+      <Box component="form" onSubmit={handleRegister} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         
         {/* Username input */}
-        <div className={styles.inputGroup}>
-          <label className={styles.label} htmlFor="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            className={styles.input}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
+        <TextField
+          label="Username"
+          variant="outlined"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
         
         {/* Password input */}
-        <div className={styles.inputGroup}>
-          <label className={styles.label} htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            className={styles.input}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        <TextField
+          label="Password"
+          type="password"
+          variant="outlined"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
         
         {/* Confirm password input */}
-        <div className={styles.inputGroup}>
-          <label className={styles.label} htmlFor="confirmPassword">Confirm Password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            className={styles.input}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
+        <TextField
+          label="Confirm Password"
+          type="password"
+          variant="outlined"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
 
         {/* Display error message if any */}
-        {error && <p className={styles.error}>{error}</p>}
+        {error && <Alert severity="error">{error}</Alert>}
         
         {/* Submit button */}
-        <button type="submit" className={styles.button}>Register</button>
-      </form>
-    </div>
+        <Button type="submit" variant="contained" color="primary">
+          Register
+        </Button>
+      </Box>
+    </Container>
   );
 };
 

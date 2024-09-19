@@ -8,11 +8,11 @@
   .heading {
     font-size: 2rem;
     margin-bottom: 20px;
-    color: rgb(var(--foreground-rgb));
+    color: black;
   }
   
   .text {
     font-size: 1rem;
-    color: rgb(var(--foreground-rgb));
+    color: black;
   }
   

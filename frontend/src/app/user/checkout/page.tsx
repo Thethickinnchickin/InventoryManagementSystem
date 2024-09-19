@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import styles from './CheckoutPage.module.css';
+import { Box, Button, Container, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 
 interface ShippingInfo {
@@ -25,7 +25,6 @@ interface CartItem {
 }
 
 const CheckoutPage = () => {
-  // State to manage shipping information
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     fullName: '',
     address: '',
@@ -34,49 +33,41 @@ const CheckoutPage = () => {
     country: '',
   });
 
-  // State to manage billing information
   const [billingInfo, setBillingInfo] = useState<BillingInfo>({
     cardNumber: '',
     expirationDate: '',
     cvv: '',
   });
 
-  // State to handle error messages and success messages
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Handle change in shipping information inputs
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
   };
 
-  // Handle change in billing information inputs
   const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBillingInfo({ ...billingInfo, [e.target.name]: e.target.value });
   };
 
-  // Handle order submission
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setError(null); // Reset error message
-    setSuccessMessage(null); // Reset success message
+    setError(null);
+    setSuccessMessage(null);
 
-    // Retrieve cart items from localStorage
     const cartItems: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
-    
+
     if (cartItems.length === 0) {
-      setError("Your cart is empty."); // Display error if the cart is empty
+      setError("Your cart is empty.");
       return;
     }
 
-    // Retrieve authentication token from cookies
     const token = document.cookie
       .split('; ')
       .find(row => row.startsWith('authToken'))
       ?.split('=')[1];
 
-    // Create order form object containing shipping and cart details
     const orderForm = {
       customerName: shippingInfo.fullName,
       shippingAddress: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.postalCode}, ${shippingInfo.country}`,
@@ -85,116 +76,120 @@ const CheckoutPage = () => {
         quantity: item.quantity,
         price: item.price
       })),
-      totalAmount: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0), // Calculate total amount
+      totalAmount: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
     };
 
     try {
-      // Send POST request to create the order
-      const response = await axios.post("https://inventorymanagementsystem-kpq9.onrender.com/orders", orderForm, {
+      const response = await axios.post(`${process.env.API_URL || 'http://localhost:3000'}/orders`, orderForm, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // On successful order placement
-      localStorage.removeItem('cart'); // Clear cart
-      setSuccessMessage('Order placed successfully!'); // Display success message
-
-      // Redirect to order confirmation page
+      localStorage.removeItem('cart');
+      setSuccessMessage('Order placed successfully!');
       window.location.href = '/user/order-confirmation';
     } catch (error) {
       console.error('Error placing order:', error);
-      setError('Failed to place the order.'); // Display error message on failure
+      setError('Failed to place the order.');
     }
   };
 
   return (
-    <div className={styles.container}>
-      <h1>Checkout</h1>
+    <Container maxWidth="sm">
+      <Typography variant="h4" gutterBottom>
+        Checkout
+      </Typography>
 
-      {/* Display error message */}
-      {error && <p className={styles.error}>{error}</p>}
-      
-      {/* Display success message */}
-      {successMessage && <p className={styles.success}>{successMessage}</p>}
+      {error && <Typography color="error" gutterBottom>{error}</Typography>}
+      {successMessage && <Typography color="success" gutterBottom>{successMessage}</Typography>}
 
       <form onSubmit={handleSubmitOrder}>
-        <h2>Shipping Information</h2>
-        
-        {/* Shipping info inputs */}
-        <input
-          type="text"
+        <Typography variant="h6" gutterBottom>
+          Shipping Information
+        </Typography>
+
+        <TextField
+          fullWidth
           name="fullName"
-          placeholder="Full Name"
+          label="Full Name"
           value={shippingInfo.fullName}
           onChange={handleShippingChange}
           required
+          margin="normal"
         />
-        <input
-          type="text"
+        <TextField
+          fullWidth
           name="address"
-          placeholder="Address"
+          label="Address"
           value={shippingInfo.address}
           onChange={handleShippingChange}
           required
+          margin="normal"
         />
-        <input
-          type="text"
+        <TextField
+          fullWidth
           name="city"
-          placeholder="City"
+          label="City"
           value={shippingInfo.city}
           onChange={handleShippingChange}
           required
+          margin="normal"
         />
-        <input
-          type="text"
+        <TextField
+          fullWidth
           name="postalCode"
-          placeholder="Postal Code"
+          label="Postal Code"
           value={shippingInfo.postalCode}
           onChange={handleShippingChange}
           required
+          margin="normal"
         />
-        <input
-          type="text"
+        <TextField
+          fullWidth
           name="country"
-          placeholder="Country"
+          label="Country"
           value={shippingInfo.country}
           onChange={handleShippingChange}
           required
+          margin="normal"
         />
 
-        <h2>Billing Information</h2>
+        <Typography variant="h6" gutterBottom>
+          Billing Information
+        </Typography>
 
-        {/* Billing info inputs */}
-        <input
-          type="text"
+        <TextField
+          fullWidth
           name="cardNumber"
-          placeholder="Card Number"
+          label="Card Number"
           value={billingInfo.cardNumber}
           onChange={handleBillingChange}
           required
+          margin="normal"
         />
-        <input
-          type="text"
+        <TextField
+          fullWidth
           name="expirationDate"
-          placeholder="Expiration Date (MM/YY)"
+          label="Expiration Date (MM/YY)"
           value={billingInfo.expirationDate}
           onChange={handleBillingChange}
           required
+          margin="normal"
         />
-        <input
-          type="text"
+        <TextField
+          fullWidth
           name="cvv"
-          placeholder="CVV"
+          label="CVV"
           value={billingInfo.cvv}
           onChange={handleBillingChange}
           required
+          margin="normal"
         />
 
-        {/* Submit order button */}
-        <button type="submit" className={styles.button}>
+        <Button type="submit" variant="contained" color="primary" style={{ marginTop: 20 }}>
           Place Order
-        </button>
+        </Button>
       </form>
-    </div>
+    </Container>
   );
 };
 
