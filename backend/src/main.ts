@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cors from 'cors';
+
 
 const expressApp = express();
 
@@ -17,12 +19,18 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
 
   // Enable CORS with specific configurations for cross-origin requests
-  app.enableCors({
-    origin: 'https://inventory-management-system-front.vercel.app', // Allow specific frontend origin
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'], // Ensure all methods are allowed
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Add 'X-Requested-With' for preflight
-    credentials: true, // Ensure cookies are allowed
-  });
+  const corsOptions = {
+    origin: 'https://inventory-management-system-front.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+  };
+  
+  // Apply CORS middleware directly to the express app
+  expressApp.use(cors(corsOptions));
+  
+  // Alternatively, apply CORS to the NestJS app (if not using `app.enableCors()`)
+  app.use(cors(corsOptions));
   // Use cookie-parser middleware for parsing cookies
   app.use(cookieParser());
 
