@@ -18,7 +18,7 @@ async function bootstrap() {
 
   // Enable CORS with specific configurations for cross-origin requests
   app.enableCors({
-    origin: ['https://inventory-management-system-front.vercel.app'], // Allow specific frontend origin
+    origin: 'https://inventory-management-system-front.vercel.app', // Allow specific frontend origin
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'], // Ensure all methods are allowed
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Add 'X-Requested-With' for preflight
     credentials: true, // Ensure cookies are allowed
