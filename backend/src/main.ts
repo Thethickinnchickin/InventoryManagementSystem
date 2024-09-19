@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
-import serverless from 'serverless-http'; // Import serverless-http for Vercel
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 const expressApp = express();
@@ -19,9 +18,10 @@ async function bootstrap() {
 
   // Enable CORS with specific configurations for cross-origin requests
   app.enableCors({
-    origin: "*", // Allow all origins for now
+    //origin: ['https://inventory-management-system-front.vercel.app', 'http://localhost:4000'], // Allow frontend origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Allowed HTTP methods
     allowedHeaders: 'Content-Type, Authorization', // Allowed headers
+    origin: "*",
     credentials: true, // Allow credentials (cookies, authorization headers)
   });
 
@@ -44,14 +44,10 @@ async function bootstrap() {
   await app.init();
 }
 
-// Export for serverless handler if deployed on Vercel
-// if (process.env.VERCEL) {
-//   module.exports = serverless(expressApp); // Proper default export for Vercel serverless functions
-// } else {
-  // For local development, start the Express server
-  bootstrap().then(() => {
-    expressApp.listen(3000, () => {
-      console.log('NestJS app running on http://localhost:3000');
-    });
+
+bootstrap().then(() => {
+  expressApp.listen(3000, () => {
+    console.log('NestJS app running on http://localhost:3000');
   });
-// }
+});
+
