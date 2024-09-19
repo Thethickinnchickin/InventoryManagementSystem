@@ -45,13 +45,13 @@ async function bootstrap() {
 }
 
 // Export for serverless handler if deployed on Vercel
-if (process.env.VERCEL) {
-  module.exports = serverless(expressApp); // Proper default export for Vercel serverless functions
-} else {
+// if (process.env.VERCEL) {
+//   module.exports = serverless(expressApp); // Proper default export for Vercel serverless functions
+// } else {
   // For local development, start the Express server
   bootstrap().then(() => {
     expressApp.listen(3000, () => {
       console.log('NestJS app running on http://localhost:3000');
     });
   });
-}
+// }
