@@ -19,10 +19,9 @@ async function bootstrap() {
 
   // Enable CORS with specific configurations for cross-origin requests
   app.enableCors({
-    //origin: ['https://inventory-management-system-front.vercel.app', 'http://localhost:4000'], // Allow frontend origin
+    origin: "*", // Allow all origins for now
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Allowed HTTP methods
     allowedHeaders: 'Content-Type, Authorization', // Allowed headers
-    origin: "*",
     credentials: true, // Allow credentials (cookies, authorization headers)
   });
 
@@ -45,16 +44,9 @@ async function bootstrap() {
   await app.init();
 }
 
-// Export serverless handler if deployed on Vercel
+// Export for serverless handler if deployed on Vercel
 if (process.env.VERCEL) {
-  module.exports.handler = async (req, res) => {
-    if (!expressApp.locals.bootstrapped) {
-      await bootstrap();
-      expressApp.locals.bootstrapped = true;
-    }
-    const handler = serverless(expressApp);
-    return handler(req, res);
-  };
+  module.exports = serverless(expressApp); // Proper default export for Vercel serverless functions
 } else {
   // For local development, start the Express server
   bootstrap().then(() => {
