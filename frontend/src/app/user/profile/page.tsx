@@ -32,7 +32,7 @@ const ProfilePage = () => {
           ?.split('=')[1];
 
         // Make the request to fetch profile data
-        const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/profile`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile({ ...profile, username: response.data.username });  // Set the username in the form
@@ -73,7 +73,7 @@ const ProfilePage = () => {
         ?.split('=')[1];
 
       // Make the request to update the username
-      await axios.put(`${process.env.API_URL || 'http://localhost:3000'}/profile/username`, { username: profile.username }, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile/username`, { username: profile.username }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -106,7 +106,7 @@ const ProfilePage = () => {
         ?.split('=')[1];
 
       // Make the request to update the password
-      await axios.put(`${process.env.API_URL || 'http://localhost:3000'}/profile/password`, 
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile/password`, 
         {
           password: profile.password,
           confirmPassword: profile.confirmPassword

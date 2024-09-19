@@ -70,7 +70,7 @@ const DashboardPage = () => {
           return;
         }
 
-        const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/dashboard/metrics`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/dashboard/metrics`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

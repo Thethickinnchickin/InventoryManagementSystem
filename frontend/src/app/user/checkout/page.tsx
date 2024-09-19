@@ -80,7 +80,7 @@ const CheckoutPage = () => {
     };
 
     try {
-      const response = await axios.post(`${process.env.API_URL || 'http://localhost:3000'}/orders`, orderForm, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/orders`, orderForm, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

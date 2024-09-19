@@ -38,7 +38,7 @@ const ProductDetailsPage: React.FC = () => {
     const fetchProduct = async () => {
       if (id) {  // Ensure that the product ID exists before making the request
         try {
-          const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products/${id}`);
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/products/${id}`);
           setProduct(response.data);  // Set the product data to state
         } catch (error) {
           console.error('Error fetching product:', error);  // Handle any errors during the fetch

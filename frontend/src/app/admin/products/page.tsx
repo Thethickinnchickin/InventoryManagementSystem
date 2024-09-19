@@ -33,7 +33,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products?page=${page}&limit=${limit}&isPaginated=true`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/products?page=${page}&limit=${limit}&isPaginated=true`);
         setProducts(response.data.data);
         setTotalPages(response.data.lastPage);
       } catch (error) {
@@ -43,7 +43,7 @@ export default function ProductsPage() {
 
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/categories`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/categories`);
         setCategories(response.data);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -68,7 +68,7 @@ export default function ProductsPage() {
       .split('; ')
       .find(row => row.startsWith('authToken'))
       ?.split('=')[1];
-    const url = editId ? `${process.env.API_URL || 'http://localhost:3000'}/products/${editId}` : `${process.env.API_URL || 'http://localhost:3000'}/products`;
+    const url = editId ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/products/${editId}` : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/products`;
 
     try {
       const response = await axios({
@@ -111,7 +111,7 @@ export default function ProductsPage() {
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
-      const response = await axios.delete(`${process.env.API_URL || 'http://localhost:3000'}/products/${id}`, {
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -147,7 +147,7 @@ export default function ProductsPage() {
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
-      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products/${id}`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = response.data;

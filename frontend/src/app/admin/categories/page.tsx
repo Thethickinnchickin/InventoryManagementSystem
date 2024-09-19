@@ -35,7 +35,7 @@ const CategoriesPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/categories`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/categories`);
       setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -56,11 +56,11 @@ const CategoriesPage = () => {
 
     try {
       if (editMode) {
-        await axios.put(`${process.env.API_URL || 'http://localhost:3000'}/categories/${currentCategoryId}`, categoryForm, {
+        await axios.put(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/categories/${currentCategoryId}`, categoryForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post(`${process.env.API_URL || 'http://localhost:3000'}/categories`, categoryForm, {
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/categories`, categoryForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -84,7 +84,7 @@ const CategoriesPage = () => {
         .split('; ')
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
-      await axios.delete(`${process.env.API_URL || 'http://localhost:3000'}/categories/${categoryId}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/categories/${categoryId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchCategories();

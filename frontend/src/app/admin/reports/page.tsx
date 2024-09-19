@@ -56,7 +56,7 @@ const ReportsPage = () => {
         .find(row => row.startsWith('authToken'))
         ?.split('=')[1];
 
-      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/reports/order-history/report`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/reports/order-history/report`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           startDate: dayjs(startDate).format('YYYY-MM-DD'),

@@ -74,7 +74,7 @@ const OrdersPage = () => {
       ?.split("=")[1];
 
     try {
-      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/orders`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           page,
@@ -94,7 +94,7 @@ const OrdersPage = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/products`);
       setProducts(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -167,12 +167,12 @@ const OrdersPage = () => {
     try {
       if (editMode && currentOrderId !== null) {
         await axios.put(
-          `${process.env.API_URL || 'http://localhost:3000'}/orders/${currentOrderId}`,
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/orders/${currentOrderId}`,
           orderForm,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-        await axios.post(`${process.env.API_URL || 'http://localhost:3000'}/orders`, orderForm, {
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/orders`, orderForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -212,7 +212,7 @@ const OrdersPage = () => {
         .split("; ")
         .find((row) => row.startsWith("authToken"))
         ?.split("=")[1];
-      await axios.delete(`${process.env.API_URL || 'http://localhost:3000'}/orders/${id}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchOrders();

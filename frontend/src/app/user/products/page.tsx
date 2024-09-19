@@ -26,7 +26,7 @@ const ProductsPage: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    axios.get(`${process.env.API_URL || 'http://localhost:3000'}/products`)
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/products`)
       .then(response => {
         const productsArray = Array.isArray(response.data.data) ? response.data.data : [];
         setProducts(productsArray);

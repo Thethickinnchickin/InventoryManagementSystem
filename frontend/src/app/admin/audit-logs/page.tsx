@@ -42,7 +42,7 @@ export default function AuditLogPage() {
         return;
       }
 
-      const response = await axios.get(`${process.env.API_URL || 'http://localhost:3000'}/reports/audit-log`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/reports/audit-log`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           page,

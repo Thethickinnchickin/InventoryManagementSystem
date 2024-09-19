@@ -22,7 +22,7 @@ const OrdersPage: React.FC = () => {
       .find(row => row.startsWith('authToken'))
       ?.split('=')[1];
 
-    axios.get(`${process.env.API_URL || 'http://localhost:3000'}/orders/user/all`, {
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/orders/user/all`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(response => setOrders(response.data))
