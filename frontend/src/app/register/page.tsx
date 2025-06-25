@@ -24,6 +24,7 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
+      
       // Send POST request to register a new user
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/users/register`, { username, password });
       
