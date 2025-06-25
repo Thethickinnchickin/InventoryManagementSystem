@@ -9,6 +9,16 @@ import cors from 'cors';
 
 const expressApp = express();
 
+const corsOptions = {
+  origin: "https://inventory-management-system-front.vercel.app",
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+};
+
+expressApp.use(cors(corsOptions));         // ✅ apply CORS to expressApp
+expressApp.use(cookieParser()); 
+
 /**
  * The `bootstrap` function initializes and configures the NestJS application.
  * It sets up CORS, cookie parsing, Swagger documentation, and prepares the app
@@ -18,21 +28,10 @@ async function bootstrap() {
   // Create a NestJS application with an Express adapter
   const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
 
-  // Enable CORS with specific configurations for cross-origin requests
-  const corsOptions = {
-    origin: "https://inventory-management-system-front.vercel.app",
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials: true,
-  };
-  
-  // Apply CORS middleware directly to the express app
-  expressApp.use(cors(corsOptions));
-  
-  // Alternatively, apply CORS to the NestJS app (if not using `app.enableCors()`)
-  app.use(cors(corsOptions));
-  // Use cookie-parser middleware for parsing cookies
-  app.use(cookieParser());
+  // // Alternatively, apply CORS to the NestJS app (if not using `app.enableCors()`)
+  // app.use(cors(corsOptions));
+  // // Use cookie-parser middleware for parsing cookies
+  // app.use(cookieParser());
 
   // Configure Swagger for API documentation
   const config = new DocumentBuilder()
