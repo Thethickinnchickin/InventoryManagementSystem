@@ -166,6 +166,10 @@ const OrdersPage = () => {
       .find((row) => row.startsWith("authToken"))
       ?.split("=")[1];
 
+    let total = 0;
+    for (const item of orderForm.items) {
+      total += (parseFloat(item.price) * item.quantity);
+    }
     try {
       if (editMode && currentOrderId !== null) {
         await axios.put(
@@ -174,11 +178,6 @@ const OrdersPage = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-      let total = 0;
-      for (const item of orderForm.items) {
-        total += (parseFloat(item.price) * item.quantity);
-      }
-
         orderForm.totalAmount = total;
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/orders`, orderForm, {
           headers: { Authorization: `Bearer ${token}` },
