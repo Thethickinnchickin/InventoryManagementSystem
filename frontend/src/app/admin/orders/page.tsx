@@ -170,6 +170,7 @@ const OrdersPage = () => {
     for (const item of orderForm.items) {
       total += (parseFloat(item.price) * item.quantity);
     }
+    orderForm.totalAmount = total;
     try {
       if (editMode && currentOrderId !== null) {
         await axios.put(
@@ -178,7 +179,7 @@ const OrdersPage = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-        orderForm.totalAmount = total;
+
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/orders`, orderForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
