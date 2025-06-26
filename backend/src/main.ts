@@ -50,9 +50,10 @@ async function bootstrap() {
 }
 
 
-bootstrap().then(() => {
-  expressApp.listen(3000, () => {
-    console.log('NestJS app running on http://localhost:3000');
-  });
-});
 
+const serverReady = bootstrap().then(() => expressApp);
+
+export default async function handler(req, res) {
+  const app = await serverReady;
+  return app(req, res); // This lets Vercel use the Express app as a handler
+}
