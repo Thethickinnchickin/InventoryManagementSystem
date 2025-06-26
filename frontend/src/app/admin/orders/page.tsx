@@ -118,6 +118,7 @@ const OrdersPage = () => {
       const selectedProduct = products.find(
         (product) => product.id === parseInt(value, 10)
       );
+      console.log(product)
       if (selectedProduct) {
         updatedItems[index] = {
           ...updatedItems[index],
