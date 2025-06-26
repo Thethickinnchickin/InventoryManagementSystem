@@ -16,6 +16,7 @@ const corsOptions = {
   credentials: true,
 };
 
+expressApp.set('trust proxy', 1);
 expressApp.use(cors(corsOptions));         // ✅ apply CORS to expressApp
 expressApp.use(cookieParser()); 
 
