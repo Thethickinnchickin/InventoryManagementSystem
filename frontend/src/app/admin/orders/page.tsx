@@ -122,7 +122,7 @@ const OrdersPage = () => {
         updatedItems[index] = {
           ...updatedItems[index],
           productId: selectedProduct.id,
-          price: selectedProduct.price.toFixed(2),
+          price: Number(selectedProduct.price).toFixed(2),
           quantity: updatedItems[index]?.quantity || 1,
         };
       }

@@ -7,16 +7,16 @@ import { User } from './src/entities/user.entity';
 import { OrderItem } from './src/entities/order-item.entity';
 import { AuditLog } from './src/entities/audit-log.entity';
 
-export const AppDataSource = new DataSource({
+export const dataSource = new DataSource({
   type: 'postgres',
   url: 'postgresql://postgres:uqYOiTjNGfafaezPxcCROIWsvWSVzfqP@autorack.proxy.rlwy.net:23628/railway',
   entities: [Product, Order, Category, User, OrderItem, AuditLog],
   migrations: ['src/migrations/*.ts'], // Path to your migrations folder
-  synchronize: false, // Disable in production to avoid auto-syncing database schema
+  synchronize: true, // Disable in production to avoid auto-syncing database schema
   logging: true,
 });
 
-AppDataSource.initialize()
+dataSource.initialize()
   .then(() => {
     console.log('Data Source has been initialized!');
   })
