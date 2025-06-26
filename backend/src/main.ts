@@ -10,7 +10,7 @@ import cors from 'cors';
 const expressApp = express();
 
 const corsOptions = {
-  origin: "https://inventory-management-front-bpxfjdi1z.vercel.app/",
+  origin: "https://inventory-management-front.vercel.app/",
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
