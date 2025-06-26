@@ -10,7 +10,7 @@ import cors from 'cors';
 const expressApp = express();
 
 const corsOptions = {
-  origin: "https://inventory-management-front.vercel.app/",
+  origin: "https://inventory-management-front-bpxfjdi1z.vercel.app/",
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
@@ -28,10 +28,10 @@ async function bootstrap() {
   // Create a NestJS application with an Express adapter
   const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
 
-  // // Alternatively, apply CORS to the NestJS app (if not using `app.enableCors()`)
-  // app.use(cors(corsOptions));
-  // // Use cookie-parser middleware for parsing cookies
-  // app.use(cookieParser());
+  // Alternatively, apply CORS to the NestJS app (if not using `app.enableCors()`)
+  app.use(cors(corsOptions));
+  // Use cookie-parser middleware for parsing cookies
+  app.use(cookieParser());
 
   // Configure Swagger for API documentation
   const config = new DocumentBuilder()
