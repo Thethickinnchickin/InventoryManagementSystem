@@ -84,6 +84,7 @@ const OrdersPage = () => {
           endDate: filterEndDate,
         },
       });
+      console.log(response.data.orders[0])
       setOrders(response.data.orders || []);
       setTotalPages(response.data.totalPages || 1);
     } catch (error) {
