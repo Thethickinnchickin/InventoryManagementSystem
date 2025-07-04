@@ -1,16 +1,100 @@
-Inventory Management System
-This project is an Inventory Management System designed to showcase proficiency in modern web development technologies. The system includes a backend built with NestJS and a frontend developed with Next.js.
+# 📦 Inventory Management System
 
-Technologies Used: NestJS for the backend, Next.js for the frontend, PostgreSQL for the database, and Jest with React Testing Library for testing. The project is deployed with Render for the backend and Vercel for the frontend.
+🚀 **Full-Stack Inventory Management with NestJS & Next.js**
 
-Features include product management, order management, and category management.
+A full-stack inventory management system built to showcase my skills in modern web development. This project features a scalable backend, a responsive frontend, and real-world functionality like product tracking, order management, and user authentication.
 
-Installation: Clone the repository and follow these steps. For the backend, navigate to the backend directory, install dependencies with npm install, set up environment variables in a .env file, run migrations with npm run migration:run, and start the server with npm run start:dev. For the frontend, navigate to the frontend directory, install dependencies with npm install, and start the development server with npm run dev.
+---
 
-Testing: Run tests for both frontend and backend using npm run test.
+## 🎯 Features
 
-Deployment: The backend is deployed on Render and the frontend is deployed on Vercel.
+* 📋 Product Management: Add, edit, delete products & track stock levels
+* 🧾 Order Management: Create & manage orders, associate products with orders
+* 📊 Reporting: View stock levels & generate financial summaries
+* 🔐 User Authentication: Secure login with user roles (Admin/User)
+* 🌐 Responsive UI: Works seamlessly across desktops, tablets, and phones
 
-Usage: Access the frontend at https://<frontend-deployment-url>. The frontend interacts with the backend API to manage inventory, products, and orders.
+---
 
-As this is a showcase project, contributions are not required. The project is intended for showcase purposes only.
+## 🖥️ Demo
+
+🌟 [**Live Demo**](https://inventory-management-front.vercel.app/)
+
+
+### 🔑 Credentials
+
+* **Admin:** username: `admin` | password: `Password`
+* **User:** username: `User` | password: `Password`
+
+---
+
+## ⚙️ Tech Stack
+
+### Backend
+
+* [NestJS](https://nestjs.com/) — Scalable server-side Node.js framework
+* [PostgreSQL](https://www.postgresql.org/) — Relational database
+* [TypeORM](https://typeorm.io/) — ORM for database interaction
+* [TypeScript](https://www.typescriptlang.org/) — Static typing
+* [Jest](https://jestjs.io/) — Backend testing
+
+### Frontend
+
+* [Next.js](https://nextjs.org/) — React-based framework with SSR
+* [MUI (Material-UI)](https://mui.com/) — Modern UI components
+* [Axios](https://axios-http.com/) — HTTP client for API requests
+
+### Others
+
+* [Sanity.io](https://www.sanity.io/) — Content management
+* [Vercel](https://vercel.com/) — Frontend hosting
+* [Render](https://render.com/) — Backend hosting
+
+---
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+* Node.js & npm
+* PostgreSQL
+* Yarn or npm
+
+### Setup
+
+```bash
+# Clone the repo
+$ git clone https://github.com/yourusername/inventory-management.git
+$ cd inventory-management
+```
+
+#### Backend
+
+```bash
+$ cd backend
+$ npm install
+$ npm run start:dev
+```
+
+#### Frontend
+
+```bash
+$ cd frontend
+$ npm install
+$ npm run dev
+```
+
+## 🚧 Challenges & Solutions
+
+✅ Handling complex relationships between entities → Solved with TypeORM & PostgreSQL foreign keys
+✅ Responsive design → Solved with MUI and flexible layouts
+✅ Secure role-based authentication → Solved with NestJS guards and middleware
+
+---
+
+## 🙋 Why I Built This
+
+I built this project to demonstrate my ability to create scalable, real-world full-stack applications. I wanted to combine my backend knowledge with a clean and modern frontend to simulate a production-ready inventory solution.
+
+---
+
