@@ -15,11 +15,13 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
 };
+// ✅ Apply CORS *once* only to expressApp, and also handle OPTIONS preflight
+expressApp.use(cors(corsOptions));
+expressApp.options('*', cors(corsOptions)); // ✅ ensures OPTIONS preflight is handled
 
+// ✅ Set trust proxy and cookie parser
 expressApp.set('trust proxy', 1);
-expressApp.use(cors(corsOptions));         // ✅ apply CORS to expressApp
-expressApp.use(cookieParser()); 
-
+expressApp.use(cookieParser());
 /**
  * The `bootstrap` function initializes and configures the NestJS application.
  * It sets up CORS, cookie parsing, Swagger documentation, and prepares the app
