@@ -1,15 +1,15 @@
-services:
-  - type: web
-    name: nest-backend
-    env: node
-    buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000 # Render automatically sets PORT, but this is a safe fallback
-      - key: DB_URL
-        fromDatabase:
-          name: your-db-name
-          property: connectionString
+{
+  "build": {
+    "env": {
+      "NODE_ENV": "production",
+      "DB_PUBLIC_URL": "DB_PUBLIC_URL",
+      "DB_HOST": "autorack.proxy.rlwy.net",
+      "DB_PORT": "23628",
+      "DB_USERNAME": "postgres",
+      "DB_PASSWORD": "uqYOiTjNGfafaezPxcCROIWsvWSVzfqP",
+      "DB_DATABASE": "postgres",
+      "JWT_SECRET": "your_secret_key"
+    }
+  },
+  "start": "npm start"
+}
