@@ -6,7 +6,6 @@ import express from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cors from 'cors';
 
-
 const expressApp = express();
 
 const corsOptions = {
@@ -15,48 +14,38 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
 };
-// ✅ Apply CORS *once* only to expressApp, and also handle OPTIONS preflight
-expressApp.use(cors(corsOptions));
-expressApp.options('*', cors(corsOptions)); // ✅ ensures OPTIONS preflight is handled
 
-// ✅ Set trust proxy and cookie parser
+// Apply CORS and middleware to Express instance
+expressApp.use(cors(corsOptions));
+expressApp.options('*', cors(corsOptions));
 expressApp.set('trust proxy', 1);
 expressApp.use(cookieParser());
-/**
- * The `bootstrap` function initializes and configures the NestJS application.
- * It sets up CORS, cookie parsing, Swagger documentation, and prepares the app
- * for serverless deployment or local execution.
- */
+
 async function bootstrap() {
-  // Create a NestJS application with an Express adapter
+  // Create Nest app with Express adapter
   const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
 
-  // Alternatively, apply CORS to the NestJS app (if not using `app.enableCors()`)
+  // Apply middleware to Nest app
   app.use(cors(corsOptions));
-  // Use cookie-parser middleware for parsing cookies
   app.use(cookieParser());
 
-  // Configure Swagger for API documentation
+  // Swagger setup
   const config = new DocumentBuilder()
     .setTitle('Inventory Management API')
     .setDescription('API documentation for the Inventory Management system')
     .setVersion('1.0')
-    .addBearerAuth() // Add Bearer token authentication to Swagger UI
+    .addBearerAuth()
     .build();
 
-  // Create Swagger document and set up Swagger UI
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // Initialize the NestJS application without starting the server (for serverless)
+  // Initialize app and start server on Railway-assigned port
   await app.init();
+  const port = process.env.PORT || 3000;
+  await expressApp.listen(port, () => {
+    console.log(`🚀 Server running on http://localhost:${port}`);
+  });
 }
 
-
-
-const serverReady = bootstrap().then(() => expressApp);
-
-export default async function handler(req, res) {
-  const app = await serverReady;
-  return app(req, res); // This lets Vercel use the Express app as a handler
-}
+bootstrap();

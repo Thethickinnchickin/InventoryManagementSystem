@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: nest-backend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000 # Render automatically sets PORT, but this is a safe fallback
+      - key: DB_URL
+        fromDatabase:
+          name: your-db-name
+          property: connectionString
