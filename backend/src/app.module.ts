@@ -25,7 +25,7 @@ import { ProfileModule } from './profile/profile.module';
     // TypeOrmModule is used to connect to the PostgreSQL database
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: process.env.DB_URL || 'postgresql://postgres:GkklltqJnTpaoydGnXyjBQkjKyiDwVoo@postgres-production-9f1c.up.railway.app:5432/railway',
+      url: process.env.DB_URL || 'postgresql://postgres:zWjBlOZgdWMotnqziosTTcWNDNzmtoOb@centerbeam.proxy.rlwy.net:56836/railway',
       autoLoadEntities: true, // Automatically load all entities defined in the application
       synchronize: true, // Set to true in development to auto-create database schema
     }),
