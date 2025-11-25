@@ -57,4 +57,23 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
+
+  async register(username: string, password: string, role: string = 'user') {
+  const existingUser = await this.usersService.findByUsername(username);
+
+  if (existingUser) {
+    throw new Error('Username already exists');
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const newUser = await this.usersService.create({
+    username,
+    password: hashedPassword,
+  });
+
+  const { password: _, ...safeUser } = newUser;
+  return safeUser;
+}
+
 }

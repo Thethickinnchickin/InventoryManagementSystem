@@ -52,6 +52,24 @@ export class AuthController {
     }
   }
 
+  @Post('register')
+  async register(@Body() body, @Res() res: Response) {
+    const { username, password, role } = body;
+
+    try {
+      const user = await this.authService.register(username, password, role);
+      return res.status(201).json({
+        message: 'User registered successfully',
+        user,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        error: error.message || 'Registration failed'
+      });
+    }
+  }
+
+
   /**
    * A protected route that requires JWT authentication.
    * 
