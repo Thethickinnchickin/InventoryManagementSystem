@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-config
+data:
+  # example: adjust to your actual config keys
+  NODE_ENV: "production"
+  DB_HOST: "postgres.railway.internal"         # service name of Postgres
+  DB_PORT: "5432"
+  DB_NAME: "railway"
