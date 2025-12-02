@@ -38,8 +38,12 @@ export class User {
    * Password of the user.
    * Stored as a plain string. Consider hashing passwords before storing them.
    */
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   password: string;
+
+  @Column({ nullable: true })
+  phoneNumber?: string;
+
 
   /**
    * Role assigned to the user.

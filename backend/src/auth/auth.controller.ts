@@ -41,7 +41,10 @@ export class AuthController {
   @Post('login')
   async login(@Body() body, @Res() res: Response) {
     try {
+      console.log(body)
       const user = await this.authService.validateUser(body.username, body.password);
+      console.log(user)
+      console.log("fuck you")
       if (!user) {
         throw new UnauthorizedException('Invalid credentials');
       }

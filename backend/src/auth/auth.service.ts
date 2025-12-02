@@ -1,7 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../services/users.service';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+import { UserRole } from 'src/entities/user.entity';
+
 
 /**
  * `AuthService` handles the business logic related to authentication.
@@ -22,6 +24,8 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  
+
   /**
    * Validates user credentials by checking the provided username and password.
    * 
@@ -29,17 +33,15 @@ export class AuthService {
    * @param pass - The plain-text password provided by the user.
    * @returns A promise that resolves to the user object without the password if validation is successful, otherwise null.
    */
-  async validateUser(username: string, pass: string): Promise<any> {
-    // Retrieve user data from the user service
-    const user = await this.usersService.findByUsername(username);
+  async validateUser(username: string, pass: string) {
+    const user = await this.usersService.findByUsername(username.trim());
+    if (!user) return null;
 
-    // Check if the user exists and if the provided password matches the stored hashed password
-    if (user && await bcrypt.compare(pass, user.password)) {
-      // Exclude the password from the result
-      const { password, ...result } = user;
-      return result;
-    }
-    return null; // Return null if validation fails
+    const isMatch = await bcrypt.compare(pass.trim(), user.password);
+
+    if (!isMatch) return null;
+    const { password, ...result } = user;
+    return result;
   }
 
   /**
@@ -58,22 +60,20 @@ export class AuthService {
     };
   }
 
+  // auth.service.ts
   async register(username: string, password: string, role: string = 'user') {
-  const existingUser = await this.usersService.findByUsername(username);
+    const existingUser = await this.usersService.findByUsername(username);
+    if (existingUser) throw new Error('Username already exists');
 
-  if (existingUser) {
-    throw new Error('Username already exists');
+    // Don't hash here anymore
+    const newUser = await this.usersService.create({
+      username: username.trim(),
+      password: password.trim(), // plain password
+      role: role as UserRole,
+    });
+
+    const { password: _, ...safeUser } = newUser;
+    return safeUser;
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const newUser = await this.usersService.create({
-    username,
-    password: hashedPassword,
-  });
-
-  const { password: _, ...safeUser } = newUser;
-  return safeUser;
-}
 
 }

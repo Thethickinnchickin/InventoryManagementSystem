@@ -6,7 +6,7 @@ import { User } from '../entities/user.entity';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { ChangePasswordDto, ChangeUsernameDto } from '../dtos/change-profile.dto';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 jest.mock('bcrypt', () => ({

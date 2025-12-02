@@ -5,7 +5,7 @@ import { User } from '../entities/user.entity';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { UsersService } from './users.service';
 import { ChangePasswordDto, ChangeUsernameDto } from '../dtos/change-profile.dto';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 @Injectable()
 export class ProfileService {

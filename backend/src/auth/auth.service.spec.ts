@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UsersService } from '../services/users.service';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+
 import { User } from '../entities/user.entity'; // Import your User entity
 
 describe('AuthService', () => {

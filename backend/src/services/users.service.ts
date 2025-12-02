@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { User, UserRole } from '../entities/user.entity';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
-import * as bcrypt from 'bcrypt'; // Import bcrypt for password hashing
+import bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -45,17 +45,18 @@ export class UsersService {
    * @returns A promise that resolves to the created user.
    */
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const saltRounds = 10; // Number of salt rounds for bcrypt
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
-    createUserDto.role = UserRole.ADMIN;
 
     const newUser = this.usersRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
+      username: createUserDto.username,
+      password: hashedPassword, // <-- hashed, not plain
+      role: createUserDto.role || UserRole.ADMIN, // default to ADMIN if not provided
     });
 
     return this.usersRepository.save(newUser);
   }
+
 
   /**
    * Update an existing user, optionally hashing the new password if provided.
