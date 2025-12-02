@@ -12,6 +12,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { AuthModule } from './auth/auth.module';
 import { RateLimitMiddleware } from './middleware/rate-limit.middleware';
 import { ProfileModule } from './profile/profile.module';
+import { HealthModule } from './health/health.module';
 
 /**
  * The `AppModule` is the root module of the NestJS application. It imports and configures various modules,
@@ -40,7 +41,8 @@ import { ProfileModule } from './profile/profile.module';
     ReportsModule,
     DashboardModule,
     AuthModule,
-    ProfileModule
+    ProfileModule,
+    HealthModule
   ],
 })
 export class AppModule {
