@@ -17,6 +17,7 @@ spec:
       containers:
         - name: backend
           image: inventory-backend:latest    # or your built image
+          imagePullPolicy: Never
           ports:
             - containerPort: 3000
           envFrom:
